@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 public class ResetTimerServlet extends BaseServlet {
 
   private static final String PARAMETER_REG_ID = "regId";
+
     
     /**
      * Handles the HTTP <code>POST</code> method.
@@ -37,28 +38,34 @@ public class ResetTimerServlet extends BaseServlet {
         String regId = getParameter(req, PARAMETER_REG_ID);
        // System.out.println("reset timer");
         //bill
+        
         if(regId!=null){
         float local_cost=Float.parseFloat(getParameter(req,"local_cost"));
         double lat=Double.parseDouble(getParameter(req,"latitude"));
         double lon=Double.parseDouble(getParameter(req,"longitude"));
-
+        //System.out.println("about to reset");
         DBCalls.update_cost(regId, local_cost,lat,lon);
         //bill
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/setreachability?reach=true");
         dispatcher.include(req, resp);
          //Contributor toBeSet = Datastore.getContributor(regId);
          Contributor toBeSetDB = Datastore.getContributorFromDb(regId);
+         
+         //System.out.println(tester);
         if(toBeSetDB != null){
-           // System.out.println("bikas");
+            
             //toBeSet.resetTimer();
             //bill
             Timestamp mytime=new Timestamp(Calendar.getInstance().getTime().getTime());
                     
             Datastore.map.put(regId, mytime);
+            //System.out.println(Datastore.map.get(regId));
             Datastore.setAvailabilityDB(regId, true);
             //bill
             setSuccess(resp);
         }
+        else
+            System.out.println("not registered user");
         }
     }
 }

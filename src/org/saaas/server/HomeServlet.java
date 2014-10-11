@@ -52,10 +52,10 @@ public class HomeServlet extends BaseServlet {
     if (status != null) {
       out.print(status);
     }
-    List<Registrant> devices = Datastore.getDevices();
-    List<Contributor> subscriptors = Datastore.getSubscriptors();
-    List<Contributor> contributors = Datastore.getAllContributorsFromDb();
-    List<Registrant> developers = Datastore.getDevelopers();
+    List<Registrant> devices = Datastore.getDevicesFromDb();
+    List<Contributor> subscriptors = Datastore.getSubscriptors();//must change
+    List<Contributor> contributors = Datastore.getAvailableContributors();
+    List<Registrant> developers = Datastore.getDevelopers();//must change
     if (devices.isEmpty()) {
       out.print("<h2>No devices registered!</h2>");
     } else {

@@ -13,7 +13,7 @@ package org.saaas.server;
     //2-d grid of coordinates map where each pointofinterest covers an area of a^2 meters^2
 
 public class myMap extends Object{
-       Point[][] my_map;
+    /*   Point[][] my_map;
        double my_distance;
        int max_sensing;
        public myMap(myMap map){
@@ -43,5 +43,5 @@ public class myMap extends Object{
                 my_map[i][j]=new Point(0,GeoLocation.fromDegrees(latO, lonO));
                 }
        }
-    
+ */   
 }

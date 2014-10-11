@@ -19,7 +19,7 @@ import java.util.Random;
  */
 public class ValueEstimator {
     public static int MaxNrofSensing=10,point_at_each_dimension=40,nrPointsGen;
-    public static double latGen,lonGen,centralLat=51.0,centralLon=43.0,distanceOfPointsInMeters=8,sensing_radius=0.004;
+    public static double latGen,lonGen,centralLat=51.0,centralLon=43.0,distanceOfPointsInMeters=8,sensing_radius=0.004;//for testing tweek
     public static float maxDistGen;
     /**
      * @param args the command line arguments
@@ -48,21 +48,68 @@ public class ValueEstimator {
 
     return(geos);
  }
+    /*
     public static myMap Mapcreator(){
     myMap map=new myMap(distanceOfPointsInMeters,point_at_each_dimension,MaxNrofSensing,centralLat,centralLon);
     return(map);
-    }
-    public static void addtoMap(CostProfile cos,myMap map){
+    }*/
+    
+    public static void addtoMap(CostProfile cos,mapfromXmltrack map){
         GeoLocation geo=GeoConverter(cos);
-         for (int i=0;i<point_at_each_dimension;i++)
-            for (int j=0;j<point_at_each_dimension;j++){
+        GeoLocation loc;
+        HashMap.Entry pair;
+        Iterator it=map.my_map.entrySet().iterator();
+        while (it.hasNext()){
+            pair=(HashMap.Entry)it.next();
+            loc=(GeoLocation) pair.getKey();
             //System.out.println("error"+geos.distanceTo(map.my_map[i][j].myLoc));
             //System.out.println("start : "+geos.distanceTo(start));
-            if ((geo.distanceTo(map.my_map[i][j].myLoc)<sensing_radius) && (map.my_map[i][j].timesSensed<map.max_sensing))
-            map.my_map[i][j].timesSensed++;
+            //System.out.println(geo.distanceTo(loc));
+            if ((geo.distanceTo(loc)<sensing_radius) && (map.my_map.get(loc)<map.max_sensing)){
+            map.my_map.put(loc, map.my_map.get(loc)+1);
+         //   System.out.println(geo.distanceTo(loc));
+            }
             }
     }
-    public static float Value_est(CostProfile costprofus, List <CostProfile> To,myMap map){
+    public static void extractFromMap(CostProfile cos,mapfromXmltrack map){
+    GeoLocation geo=GeoConverter(cos);
+        GeoLocation loc;
+        HashMap.Entry pair;
+        Iterator it=map.my_map.entrySet().iterator();
+        while (it.hasNext()){
+            pair=(HashMap.Entry)it.next();
+            loc=(GeoLocation) pair.getKey();
+            //System.out.println("error"+geos.distanceTo(map.my_map[i][j].myLoc));
+            //System.out.println("start : "+geos.distanceTo(start));
+            //System.out.println(geo.distanceTo(loc));
+            if ((geo.distanceTo(loc)<sensing_radius) && (map.my_map.get(loc)<map.max_sensing)){
+            map.my_map.put(loc, map.my_map.get(loc)-1);
+         //   System.out.println(geo.distanceTo(loc));
+            }
+            }
+    }
+    public static float Value_est(CostProfile costprofus,mapfromXmltrack map){
+        float value=0;
+        GeoLocation geo=GeoConverter(costprofus);
+        GeoLocation loc;
+        HashMap.Entry pair;
+        Iterator it=map.my_map.entrySet().iterator();
+        while (it.hasNext()){
+            pair=(HashMap.Entry)it.next();
+            loc=(GeoLocation) pair.getKey();
+        if ((geo.distanceTo(loc)<sensing_radius) && (map.my_map.get(loc)<map.max_sensing)){
+            value++;
+        }
+        else{
+            System.out.println(geo.distanceTo(loc));
+            System.out.println(map.my_map.get(loc));
+        }
+        }
+        return value;
+
+    }
+    /*
+    public static float Value_est(CostProfile costprofus, List <CostProfile> To,mapfromXmltrack map){
         float value=0;
         GeoLocation newgeo=GeoConverter(costprofus);
         List<GeoLocation> geo=GeoListConverter(To);
@@ -92,7 +139,7 @@ public class ValueEstimator {
                 }
             }
         return(value);
-    }
+    }*/
     private static List<GeoLocation> GeoListConverter (List <CostProfile> To){
        List<GeoLocation> geos = new ArrayList<GeoLocation>(); 
        Iterator<CostProfile> itr1 = To.iterator();

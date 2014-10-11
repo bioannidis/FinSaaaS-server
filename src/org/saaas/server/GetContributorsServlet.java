@@ -144,7 +144,7 @@ public class GetContributorsServlet extends BaseServlet {
             }
             //bill algo select
             int value_of_task=10;
-            selected_strings=AlgoChoise.select_winners_to_deploy_offline(number, value_of_task/* must be something like appName.value_of_task*/);
+            selected_strings=AlgoChoise.select_winner_to_deploy_online(2,10,130/* must be something like appName.value_of_task*/);
             System.out.println("epilegmenoi xristes" +selected_strings.toString());
             //bill
             Datastore.sendToDbBook(uuid.toString(), selected_strings, appName);

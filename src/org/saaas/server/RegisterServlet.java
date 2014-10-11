@@ -47,6 +47,7 @@ public class RegisterServlet extends BaseServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException {
+       System.out.println("8a ginei register" );
     String regId = getParameter(req, PARAMETER_REG_ID);
     String type = getParameter(req, PARAMETER_TYPE);
     String ip = getParameter(req, PARAMETER_IP);
@@ -62,9 +63,12 @@ public class RegisterServlet extends BaseServlet {
     //akoma kalitero na pernagame ena hashmap ws
     //orisma
     Datastore.register(regId, type, ip, time,user);
-    if(DBCalls.exist_in_db_us(regId))
-        DBCalls.deleteFromDbus(regId);
-    DBCalls.new_user(regId, local_cost,lat,lon);
+    if(DBCalls.exist_in_db_us(regId)){
+ 
+        DBCalls.update_cost(regId, local_cost,lat,lon);
+    }
+    else 
+        DBCalls.new_user(regId, local_cost,lat,lon);
     
     System.out.println("egine to register" +regId);
     setSuccess(resp);

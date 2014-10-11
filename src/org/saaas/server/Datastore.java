@@ -50,6 +50,7 @@ public final class Datastore {
     static String connectionURL = "jdbc:mysql://localhost:3306/saas_project";
     	
 	int rs = 0;
+       
   
   private Datastore() {
     throw new UnsupportedOperationException();
@@ -60,9 +61,14 @@ public final class Datastore {
   */
   public static final Map<String, Timestamp> map = new HashMap<String, Timestamp>();
   
-  private static boolean get_state(String regId){
+  
+  
+ private static boolean get_state(String regId){
     boolean avail=false;
     if(map.get(regId)==null){
+        //prosoxi edw fix
+        // SOS FIX THIS
+        System.out.println("bike edw gg");
         setReachabilityDB(regId,false);
         setAvailabilityDB(regId,false);
     
@@ -71,8 +77,10 @@ public final class Datastore {
     long start=map.get(regId).getTime();
     Date date=new Date();
     long now=date.getTime();
-    if (start+delay_between_updates>now)
+    if (start+delay_between_updates>now){
         avail=true;
+        //System.out.println("available user");
+    }
     else{
         System.out.println("bika edw : start : now "+ start+"  "+ now);
         setReachabilityDB(regId,false);
@@ -1725,6 +1733,54 @@ public static  void sendToDbBook( String bId, List<String> RegIDs, String appNam
    * Gets available contributing devices.
      * @return 
    */
+  public static List<Contributor> getAvailableContributorsFromDbTesting(){
+    List<Contributor> availableContributors = new ArrayList<Contributor>();
+    Connection connection =null;
+    try {
+                        PreparedStatement statement = null;
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			connection = DriverManager.getConnection(connectionURL, "root","");
+			
+			//System.out.println("sinde8ika me basi");
+			String sqle = "select * from Contributors;"
+                                ;	
+			statement =  connection.prepareStatement(sqle);
+                        ResultSet rs = statement.executeQuery();
+                        
+                         while(rs.next()){
+                             
+                        Contributor current=new Contributor(new Registrant());
+                        current.setAvailability(rs.getBoolean(4));
+                        current.setRegId(rs.getString(1));
+                        current.setBookingId(rs.getString(7));
+                        current.setIpAddress(rs.getString(3));
+                        current.setUserName(rs.getString(2));
+                        current.setLastReceiver(rs.getBoolean(5));
+                        current.setReachability(rs.getBoolean(6));
+                        current.setTTL(rs.getInt(9));
+                        current.setTimestamp(Timestamp.valueOf(rs.getString(8)));
+                        if(current.getAvailability()){
+                        availableContributors.add(current);
+                        }
+                         }
+                        System.out.println("getravailableContributorFromDb "+ statement.getResultSet());
+			//System.out.println("egine to update");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+                        finally{ 
+                      if(connection!=null)
+                         try {
+                          connection.close();
+                      } catch (SQLException ex) {
+                          Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+                      }
+                 }
+        
+        
+    return(availableContributors);
+  }
   public static List<Contributor> getAvailableContributorsFromDb(){
     List<Contributor> availableContributors = new ArrayList<Contributor>();
     Connection connection =null;
@@ -1734,7 +1790,7 @@ public static  void sendToDbBook( String bId, List<String> RegIDs, String appNam
 			connection = DriverManager.getConnection(connectionURL, "root","");
 			
 			//System.out.println("sinde8ika me basi");
-			String sqle = "select * from Contributors where availability=1;"
+			String sqle = "select * from Contributors;"
                                 ;	
 			statement =  connection.prepareStatement(sqle);
                         ResultSet rs = statement.executeQuery();
@@ -1751,10 +1807,11 @@ public static  void sendToDbBook( String bId, List<String> RegIDs, String appNam
                         current.setReachability(rs.getBoolean(6));
                         current.setTTL(rs.getInt(9));
                         current.setTimestamp(Timestamp.valueOf(rs.getString(8)));
-                        if(current.getAvailability())
+                        if(current.getAvailability()){
                         availableContributors.add(current);
+                        }
                          }
-                        System.out.println("getravailableContributorFromDb "+ statement.getResultSet().toString());
+                        System.out.println("getravailableContributorFromDb "+ statement.getResultSet());
 			//System.out.println("egine to update");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

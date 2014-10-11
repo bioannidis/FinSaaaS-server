@@ -18,12 +18,15 @@ import java.util.TreeMap;
 public class AlgoChoise {
     private static List <CostProfile> select_available_users(){
       List <CostProfile> costprof=new ArrayList<CostProfile>();
-      List<Contributor> availableContributors=Datastore.getAvailableContributorsFromDb();
+      //testing List<Contributor> availableContributors=Datastore.getAvailableContributorsFromDb();
+      List<Contributor> availableContributors=Datastore.getAvailableContributors();//erase after tests
+          System.out.println(availableContributors.size());
       Iterator <Contributor> itr=availableContributors.iterator();
       while (itr.hasNext()){
           Contributor current = itr.next();
           CostProfile costprofus;
           costprofus = DBCalls.getUser(current.getRegId());
+          System.out.println(costprofus.local_cost);
           if (costprofus!=null)
             costprof.add(costprofus);
           
@@ -38,8 +41,8 @@ public class AlgoChoise {
      * must be tested in the simulation
      */
     private static double delta_for_fixing_the_limit=0.8;
-    private static myMap map;
-    
+    private static mapfromXmltrack  map;
+    private static int sensing_times=10;
     /*for testing
     private static List <CostProfile> select_available_users(){
       List <CostProfile> costprof=new ArrayList<CostProfile>();
@@ -103,7 +106,7 @@ public class AlgoChoise {
    
     private static float compute_value(CostProfile costprofus,List <CostProfile> To){
        float value=0;
-       value=ValueEstimator.Value_est(costprofus, To,map);
+       value=ValueEstimator.Value_est(costprofus,map);
        return (value);
     }
    
@@ -111,7 +114,7 @@ public class AlgoChoise {
         float cost=computeCost(costprofus);
         float value=compute_value(costprofus, To);
         cost=value/cost;
-         System.out.println("marginal value :"+cost);
+        System.out.println("marginal value :"+cost);
         return(cost);
     }
     private static float computeValOnline (CostProfile costprofus, List <CostProfile> To) {
@@ -145,7 +148,7 @@ public class AlgoChoise {
         while (itr.hasNext()){
             CostProfile costprofus=itr.next();
             val=computeValOnline((costprofus),To);
-            System.out.println("val :"+ val);
+           System.out.println("val :"+ val);
             if (val>greatest_value){
               greatest_value=val;
               selected=costprofus;
@@ -203,7 +206,7 @@ public class AlgoChoise {
         if(i==null)
             return(float) (limit);
         while ((!selected.isEmpty())&&(computeCost(i)<=(computeValOnline(i,checked)*Budget/computeValSet(help)))){
-           
+           ValueEstimator.addtoMap(i, map);
            checked.add(i);
            selected.removeAll(checked);
            i=find_max_density(selected,checked);
@@ -241,7 +244,7 @@ public class AlgoChoise {
         Start_time = date.getTime();
         CostProfile costprof;
         List <CostProfile> Online_users=select_available_users();
-        map=ValueEstimator.Mapcreator();
+        map=new mapfromXmltrack(sensing_times);
         /*
         TreeMap<Float,String> costs=new TreeMap<Float,String>();
         Iterator<CostProfile> itr=costprof.iterator();
@@ -306,9 +309,14 @@ public class AlgoChoise {
              break;
          if (t>=time_st){
              System.out.println("left: "+left);
-             if(!left.isEmpty())
+             mapfromXmltrack helper=new mapfromXmltrack(map);
+             
+             if(!left.isEmpty()){
+             map=new mapfromXmltrack(sensing_times);
              lim=get_limit(left,budget_st,lim);
              System.out.println("limit : "+lim );
+             map= new mapfromXmltrack(helper);
+             }
              time_st=2*time_st;
              budget_st=2*budget_st;
              //2h fasi
@@ -324,7 +332,9 @@ public class AlgoChoise {
                 if(selected.size()==user_to_deploy)
              break;
              float val=compute_value(costprof,selected);
-             
+             if (selected.contains(costprof)){
+                 ValueEstimator.extractFromMap(costprof,map);
+             }
              if((computeCostOnline(costprof,selected)>=lim)&&(val/lim<(budget_st-sum))&&((val/lim)>costprof.pay)){
                 pay_user(costprof,(val/lim));
                 System.out.println("pay "+ val/lim);
@@ -332,9 +342,10 @@ public class AlgoChoise {
                // if (costprof.regId.equals("4"));
                 //    System.out.println("epilex8ei");
                 selected.add(costprof);
-                ValueEstimator.addtoMap(costprof,map);
+                
                 DBCalls.informDbforSelect(costprof.regId);
                 }
+                ValueEstimator.addtoMap(costprof,map);
                  System.out.println("allazw plirwmi xristi st "+ budget_st);
              }
              

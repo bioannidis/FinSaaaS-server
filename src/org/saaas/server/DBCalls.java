@@ -9,9 +9,12 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,12 +25,20 @@ import java.util.logging.Logger;
  */
 public final  class DBCalls {
     static String connectionURL = "jdbc:mysql://localhost:3306/saas_project";
+    public static final Map<String, CostProfile> cost_map= new HashMap<String, CostProfile>();
     
     public static void new_user(String regId,float local_cost,double lat,double lon){
         sendToDbUser(regId,local_cost,0,0,lat,lon,0);
+        cost_map.put(regId, new CostProfile(regId,local_cost,getUserPart(regId),0,lat,lon) );
+        
     }
     public static void update_cost(String regId,float local_cost,double lat,double lon){
-        updateDbUser(regId,local_cost,lat,lon);
+      
+        cost_map.put(regId, new CostProfile(regId,local_cost,getUserPart(regId),0,lat,lon) );  
+        cost_map.get(regId).local_cost=local_cost;
+        cost_map.get(regId).lat=lat;
+        cost_map.get(regId).lon=lon;
+        //updateDbUser(regId,local_cost,lat,lon);
     }
      private static  void updateDbUser(String regId,float local_cost,double lat,double lon){ 
          Connection connection = null;
@@ -63,7 +74,8 @@ public final  class DBCalls {
                       }
                  }
     }
-    public static  void pay_user (String regId,float payment){ 
+    public static  void pay_user (String regId,float payment){
+        cost_map.get(regId).pay=payment;
          Connection connection = null;
         	try {
                        
@@ -198,7 +210,42 @@ public final  class DBCalls {
                       }
                  }
     }
+    public static int getUserPart( String regId){
+        Connection connection = null;
+        CostProfile costprof=null;
+        try {
+                     PreparedStatement statement = null;
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			connection = DriverManager.getConnection(connectionURL, "root","");
+			
+			//System.out.println("sinde8ika me basi");
+			String sqle = "select * from user_usage where regId=? ;"
+                                ;	
+			statement =  connection.prepareStatement(sqle);
+			statement.setString(1, regId);
+                         ResultSet rs = statement.executeQuery();
+                        while(rs.next())
+                        costprof=new CostProfile(regId,rs.getFloat(2),rs.getInt(3),rs.getFloat(4),rs.getDouble(5),rs.getDouble(6));
+                       //System.out.println("sendToDbUser");
+			//System.out.println("egine to update");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+                       finally{ 
+                      if(connection!=null)
+                         try {
+                          connection.close();
+                      } catch (SQLException ex) {
+                          Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+                      }
+                 }
+        
+        return costprof.particepated;
+    }
     public static CostProfile getUser( String regId){
+        CostProfile late_insert=cost_map.get(regId);
+        updateDbUser(late_insert.regId,late_insert.local_cost,late_insert.lat,late_insert.lon);
         Connection connection = null;
         CostProfile costprof=null;
         try {
@@ -261,7 +308,7 @@ public final  class DBCalls {
                  }
     }
     public static void end_of_auction(String regId){
-        CostProfile prof=getUser(regId);
+         CostProfile prof=getUser(regId);
          Connection connection = null;
     try {
                      PreparedStatement statement = null;

@@ -173,5 +173,25 @@ public class GeoLocation {
 		return new GeoLocation[]{fromRadians(minLat, minLon),
 				fromRadians(maxLat, maxLon)};
 	}
+         @Override
+    public boolean equals(Object o){
+        if(o == null) return false;
+    if (getClass() != o.getClass()) return false;
 
+    GeoLocation other = (GeoLocation) o;
+    if(this.radLat!=(other.radLat)) return false;
+    if(this.radLon!=(other.radLon)) return false;
+    return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.radLat) ^ (Double.doubleToLongBits(this.radLat) >>> 32));
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.radLon) ^ (Double.doubleToLongBits(this.radLon) >>> 32));
+        hash = 47 * hash + (int) (Double.doubleToLongBits(this.degLon) ^ (Double.doubleToLongBits(this.degLon) >>> 32));
+        return hash;
+    }
+
+   
 }
