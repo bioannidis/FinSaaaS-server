@@ -9,6 +9,7 @@ package org.saaas.server;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,18 +30,26 @@ public class SetReachabilityServlet extends BaseServlet {
      * @param resp
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
+     * 
      */
+          Datastore datastore ;
+
+  @Override
+	  public void init(ServletConfig config) throws ServletException {
+	    super.init(config);
+            datastore=new Datastore();
+	  }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String regId = getParameter(req, PARAMETER_REG_ID);
         String reach = getParameter(req, PARAMETER_AVAIL);
-        Contributor toBeSet = Datastore.getContributor(regId);
+        Contributor toBeSet = datastore.getContributor(regId);
         if(toBeSet != null){
             toBeSet.setReachability(Boolean.valueOf(reach));
             //must inform DB
             //bill
-            Datastore.setReachabilityDB(regId,true);
+            datastore.setReachabilityDB(regId,true);
             //bill
             setSuccess(resp);
         }

@@ -45,10 +45,11 @@ public class SendAllMessagesServlet extends BaseServlet {
   private Sender sender;
 
   private static final Executor threadPool = Executors.newFixedThreadPool(5);
-
+  Datastore datastore;
   @Override
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
+    datastore=new Datastore();
     sender = newSender(config);
   }
 
@@ -73,7 +74,7 @@ public class SendAllMessagesServlet extends BaseServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws IOException, ServletException {
-    List<Contributor> devices = Datastore.getContributors();
+    List<Contributor> devices = datastore.getContributors();
     String status;
     if (devices.isEmpty()) {
       status = "Message ignored as there is no device registered!";
@@ -145,14 +146,14 @@ public class SendAllMessagesServlet extends BaseServlet {
             if (canonicalRegId != null) {
               // same device has more than on registration id: update it
               logger.log(Level.INFO, "canonicalRegId {0}", canonicalRegId);
-              Datastore.updateRegistration(regId, canonicalRegId);
+              datastore.updateRegistration(regId, canonicalRegId);
             }
           } else {
             String error = result.getErrorCodeName();
             if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
               // application has been removed from device - unregister it
               logger.log(Level.INFO, "Unregistered device: {0}", regId);
-              Datastore.unregister(regId);
+              datastore.unregister(regId);
             } else {
               logger.log(Level.SEVERE, "Error sending message to {0}: {1}", new Object[]{regId, error});
             }

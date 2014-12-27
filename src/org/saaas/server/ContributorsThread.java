@@ -23,12 +23,14 @@ public class ContributorsThread implements Runnable{
 	private static final int MULTICAST_SIZE = 1000;
 	private static final Executor threadPool = Executors.newFixedThreadPool(5);
 	Thread t;
+        private Datastore datastore;
 	
 	public ContributorsThread(Sender sender) {
 		super();
 		this.sender = sender;
 		t = new Thread(this);
 		t.start();
+                datastore=new Datastore();
 	}
 
 
@@ -39,7 +41,7 @@ public class ContributorsThread implements Runnable{
 	         while (true) {
 ////	        	 try {
 		        	logger.info("Thread Contributors Running");
-		        	List<Contributor> devices = Datastore.getContributors();
+		        	List<Contributor> devices = datastore.getContributors();
 		        	logger.log(Level.INFO, "Thread nb Contributors :{0}", String.valueOf(devices.size()));
 		    	    String status;
 		    	    if (devices.isEmpty()) {
@@ -59,7 +61,7 @@ public class ContributorsThread implements Runnable{
 ////				        	  if (result.getErrorCodeName().equals(Constants.ERROR_NOT_REGISTERED)) {
 ////					              // application has been removed from device - unregister it
 ////					              logger.log(Level.INFO, "Unregistered device: {0}", registrationId);
-////					              Datastore.unregister(registrationId);
+////					              datastore.unregister(registrationId);
 ////				        	  }
 ////						}
 ////		    	        status = "Sent message to one device: " + result;
@@ -67,7 +69,7 @@ public class ContributorsThread implements Runnable{
 ////                                {
 ////                                    if(message.getTimeToLive()<10)
 ////                                    {
-////                                        Contributor unreachable = Datastore.getContributor(registrationId);
+////                                        Contributor unreachable = datastore.getContributor(registrationId);
 ////                                        unreachable.setReachability(false);
 ////                                        unreachable.unsetTimer();                                                                        
 ////                                    }
@@ -136,14 +138,14 @@ public class ContributorsThread implements Runnable{
 	            if (canonicalRegId != null) {
 	              // same device has more than on registration id: update it
 	              logger.log(Level.INFO, "canonicalRegId {0}", canonicalRegId);
-	              Datastore.updateRegistration(regId, canonicalRegId);
+	              datastore.updateRegistration(regId, canonicalRegId);
 	            }
 	          } else {
 	            String error = result.getErrorCodeName();
 	            if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
 	              // application has been removed from device - unregister it
 	              logger.log(Level.INFO, "Unregistered device: {0}", regId);
-	              Datastore.unregister(regId);
+	              datastore.unregister(regId);
 	            } else {
 	              logger.log(Level.SEVERE, "Error sending message to {0}: {1}", new Object[]{regId, error});
 	            }
@@ -160,7 +162,7 @@ public class ContributorsThread implements Runnable{
                             {
                                 if(current.getValue().getTimeToLive()<10)
                                 {
-                                    Contributor unreachable = Datastore.getContributor(current.getKey());
+                                    Contributor unreachable = datastore.getContributor(current.getKey());
                                     unreachable.setReachability(false);
                                     unreachable.unsetTimer();
                                 }

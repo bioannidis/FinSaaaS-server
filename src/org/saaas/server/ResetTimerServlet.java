@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,9 +21,16 @@ import javax.servlet.http.HttpServletResponse;
  * @author gmerlino
  */
 public class ResetTimerServlet extends BaseServlet {
-
+     Datastore datastore;
+     DBCalls dbCalls;
   private static final String PARAMETER_REG_ID = "regId";
-
+  @Override
+	  public void init(ServletConfig config) throws ServletException {
+	    super.init(config);
+            datastore=new Datastore();
+             dbCalls =new DBCalls();
+	  }
+     
     
     /**
      * Handles the HTTP <code>POST</code> method.
@@ -39,17 +47,18 @@ public class ResetTimerServlet extends BaseServlet {
        // System.out.println("reset timer");
         //bill
         
+        
         if(regId!=null){
         float local_cost=Float.parseFloat(getParameter(req,"local_cost"));
         double lat=Double.parseDouble(getParameter(req,"latitude"));
         double lon=Double.parseDouble(getParameter(req,"longitude"));
         //System.out.println("about to reset");
-        DBCalls.update_cost(regId, local_cost,lat,lon);
+        dbCalls.update_cost(regId, local_cost,lat,lon);
         //bill
         RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/setreachability?reach=true");
         dispatcher.include(req, resp);
-         //Contributor toBeSet = Datastore.getContributor(regId);
-         Contributor toBeSetDB = Datastore.getContributorFromDb(regId);
+         //Contributor toBeSet = datastore.getContributor(regId);
+         Contributor toBeSetDB = datastore.getContributorFromDb(regId);
          
          //System.out.println(tester);
         if(toBeSetDB != null){
@@ -58,9 +67,9 @@ public class ResetTimerServlet extends BaseServlet {
             //bill
             Timestamp mytime=new Timestamp(Calendar.getInstance().getTime().getTime());
                     
-            Datastore.map.put(regId, mytime);
-            //System.out.println(Datastore.map.get(regId));
-            Datastore.setAvailabilityDB(regId, true);
+            datastore.map.put(regId, mytime);
+            //System.out.println(datastore.map.get(regId));
+            datastore.setAvailabilityDB(regId, true);
             //bill
             setSuccess(resp);
         }

@@ -19,6 +19,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,9 +42,15 @@ public class RegisterServlet extends BaseServlet {
   private static final String PARAMETER_TIME = "timestamp";
  
   private static final String PARAMETER_USERNAME = "user";
+   Datastore datastore;
+ 
+  @Override
+	  public void init(ServletConfig config) throws ServletException {
+	    super.init(config);
+            datastore=new Datastore();
+	  }
    
   private final Logger clogger = Logger.getLogger(getClass().getName());
-
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException {
@@ -53,6 +60,9 @@ public class RegisterServlet extends BaseServlet {
     String ip = getParameter(req, PARAMETER_IP);
     String timeS = getParameter(req, PARAMETER_TIME);
     String user=getParameter(req,PARAMETER_USERNAME);
+    
+    
+    DBCalls dbCalls =new DBCalls();
    // System.out.println("egine to register" +regId);
     double lat=Double.parseDouble(getParameter(req,"latitude"));
     double lon=Double.parseDouble(getParameter(req,"longitude"));
@@ -62,13 +72,13 @@ public class RegisterServlet extends BaseServlet {
     //pros8iki orismatos sto datastore
     //akoma kalitero na pernagame ena hashmap ws
     //orisma
-    Datastore.register(regId, type, ip, time,user);
-    if(DBCalls.exist_in_db_us(regId)){
+    datastore.register(regId, type, ip, time,user);
+    if(dbCalls.exist_in_db_us(regId)){
  
-        DBCalls.update_cost(regId, local_cost,lat,lon);
+        dbCalls.update_cost(regId, local_cost,lat,lon);
     }
     else 
-        DBCalls.new_user(regId, local_cost,lat,lon);
+        dbCalls.new_user(regId, local_cost,lat,lon);
     
     System.out.println("egine to register" +regId);
     setSuccess(resp);

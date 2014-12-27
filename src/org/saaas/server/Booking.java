@@ -228,7 +228,8 @@ public class Booking {
         if(toBeCollected > 0){
             logger.log(Level.INFO, "booking ID: {0}, number of contributors to be collected: {1}", new Object[]{this.bookingId, toBeCollected});
             int count = 0;
-            List<Contributor> avail = Datastore.getAvailableContributors();
+            Datastore datastore=new Datastore();
+            List<Contributor> avail = datastore.getAvailableContributors();
             List<Contributor> refill_tmp = new ArrayList<Contributor>();
             Iterator<Contributor> refill_it = avail.iterator();
             while(count < toBeCollected){

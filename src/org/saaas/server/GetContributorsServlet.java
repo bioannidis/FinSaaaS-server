@@ -23,6 +23,8 @@ public class GetContributorsServlet extends BaseServlet {
     private static final String PARAMETER_APP_NAME = "application_name";
     private static final String PARAMETER_APP_CONTENT = "application_content";
     private Sender sender;
+    private Datastore datastore;
+    private AlgoChoise algoChoise;
     int number;
     String appName;
     String appContent;
@@ -31,6 +33,9 @@ public class GetContributorsServlet extends BaseServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         sender = newSender(config);
+        datastore=new Datastore();
+        algoChoise=new AlgoChoise();
+          
     }
 
     /**
@@ -53,13 +58,12 @@ public class GetContributorsServlet extends BaseServlet {
         number = Integer.valueOf(nb);
         appName = getParameter(req, PARAMETER_APP_NAME);
         logger.log(Level.INFO, "number: {0} appName : {1}", new Object[]{number, appName});
-	appContent = getParameter(req, PARAMETER_APP_CONTENT);
+        appContent = getParameter(req, PARAMETER_APP_CONTENT);
         logger.log(Level.INFO, "number: {0} appName : {1}", new Object[]{number, appName});
 
-////	    List<Contributor> avail = Datastore.getContributors();
+////	    List<Contributor> avail = datastore.getContributors();
         //edw 8a adikatastisw to available Contributors me klisi stin dikia m klasi
-        
-        List<Contributor> avail = Datastore.getAvailableContributors();
+        List<Contributor> avail = datastore.getAvailableContributors();
         List<Contributor> selected = new ArrayList<Contributor>();
         JSONObject json = new JSONObject();
 //	    boolean start = false;
@@ -110,54 +114,53 @@ public class GetContributorsServlet extends BaseServlet {
 //			}
 //		}
 
-        if (number <= avail.size()) {
-
-            int count = 0;
-            Iterator<Contributor> con_it = avail.iterator();
-            while (count < number && con_it.hasNext()) {
-                Contributor current = con_it.next();
+        //if (number <= avail.size()) { no need for this
+        int count = 0;
+        Iterator<Contributor> con_it = avail.iterator();
+        while (count < number && con_it.hasNext()) {
+            Contributor current = con_it.next();
 ////                    boolean status = sendMessage(current);
 ////                    if(status){
-                if (current.getReachability()) ////
-                {                                                   ////
+            if (current.getReachability()) ////
+            {                                                   ////
 ////                        current.setReachability(true);
 ////                        current.resetTimer();
-                    current.setAvailability(false);
-                    selected.add(current);
-                    json.put(count, current.getRegId());
-                    count++;
+                current.setAvailability(false);
+                selected.add(current);
+                json.put(count, current.getRegId());
+                count++;
 ////                    } else {
 ////                        current.setReachability(false);
 ////                        current.unsetTimer();
 ////                    }
-                }                                                   ////
-            }
-            Long uuid = System.currentTimeMillis();
-            Datastore.book(uuid.toString(), selected, appName);
-          //  Datastore.getBooking(uuid.toString()).setTimer();
-
-            List<String> selected_strings = new ArrayList<String>();
-            Iterator<Contributor> select_it = selected.iterator();
-            while (select_it.hasNext()) {
-                Contributor curr = select_it.next();
-                selected_strings.add(curr.getRegId());
-            }
-            //bill algo select
-            int value_of_task=10;
-            selected_strings=AlgoChoise.select_winner_to_deploy_online(2,10,130/* must be something like appName.value_of_task*/);
-            System.out.println("epilegmenoi xristes" +selected_strings.toString());
-            //bill
-            Datastore.sendToDbBook(uuid.toString(), selected_strings, appName);
-            sendAPK(selected_strings);
-            
-
-            json.put("booking ID", uuid.toString());
-            resp.setContentType("application/json");
-            PrintWriter out = resp.getWriter();
-            out.print(json);
-            out.flush();
-            setSuccess(resp);
+            }                                                   ////
         }
+        Long uuid = System.currentTimeMillis();
+        datastore.book(uuid.toString(), selected, appName);
+        //  Datastore.getBooking(uuid.toString()).setTimer();
+
+        List<String> selected_strings = new ArrayList<String>();
+        Iterator<Contributor> select_it = selected.iterator();
+        while (select_it.hasNext()) {
+            Contributor curr = select_it.next();
+            selected_strings.add(curr.getRegId());
+        }
+        //bill algo select  
+        int value_of_task = 10;
+     
+        selected_strings =algoChoise.select_winner_to_deploy_online(number, 180, 130/* must be something like appName.value_of_task*/,true);
+        System.out.println("epilegmenoi xristes" + selected_strings.toString());
+        //bill
+        datastore.sendToDbBook(uuid.toString(), selected_strings, appName);
+        sendAPK(selected_strings);
+
+        json.put("booking ID", uuid.toString());
+        resp.setContentType("application/json");
+        PrintWriter out = resp.getWriter();
+        out.print(json);
+        out.flush();
+        setSuccess(resp);
+        //}
     }
 
     private void sendAPK(List<String> selectedId) {
@@ -330,7 +333,6 @@ public class GetContributorsServlet extends BaseServlet {
 //         }*/
 //        return send(registrationId);
 //    }
-
     private boolean send(String registrationId) {
         Message message;
         message = new Message.Builder().build();

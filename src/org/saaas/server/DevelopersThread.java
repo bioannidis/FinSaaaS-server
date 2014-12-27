@@ -21,12 +21,15 @@ public class DevelopersThread implements Runnable{
 	private static final int MULTICAST_SIZE = 1000;
 	private static final Executor threadPool = Executors.newFixedThreadPool(5);
 	Thread t;
+        private Datastore datastore;
+        
 	
 	public DevelopersThread(Sender sender) {
 		super();
 		this.sender = sender;
 		t = new Thread(this);
 		t.start();
+                datastore=new Datastore();
 	}
 
 
@@ -37,7 +40,7 @@ public class DevelopersThread implements Runnable{
 	         while (true) {
 	        	 try {
 		        	//logger.info("Thread Developers Running");
-		        	List<Registrant> devices = Datastore.getDevelopers();
+		        	List<Registrant> devices = datastore.getDevelopers();
 		        	//logger.info("Thread nb Developers :" + String.valueOf(devices.size()));
 		    	    String status;
 		    	    if (devices.isEmpty()) {
@@ -48,8 +51,8 @@ public class DevelopersThread implements Runnable{
 		    	      if (devices.size() == 1) {
 		    	        // send a single message using plain post
 		    	        String registrationId = devices.get(0).getRegId();
-		    	        List<Contributor> contributors = Datastore.getContributors();
-		    	        List<Contributor> subscriptors = Datastore.getSubscriptors();
+		    	        List<Contributor> contributors = datastore.getContributors();
+		    	        List<Contributor> subscriptors = datastore.getSubscriptors();
 		    	       // logger.info("nb Contributors :" + String.valueOf(contributors.size()));
 		    	        Message message = new Message.Builder().addData("nbContributors", String.valueOf(contributors.size()))
 		    	        		.addData("nbSubscriptors", String.valueOf(subscriptors.size())).build();
@@ -62,7 +65,7 @@ public class DevelopersThread implements Runnable{
 				        	  if (result.getErrorCodeName().equals(Constants.ERROR_NOT_REGISTERED)) {
 					              // application has been removed from device - unregister it
 					              logger.info("Unregistered device: " + registrationId);
-					              Datastore.unregister(registrationId);
+					              datastore.unregister(registrationId);
 				        	  }
 						}
 		    	        status = "Sent message to one device: " + result;
@@ -105,8 +108,8 @@ public class DevelopersThread implements Runnable{
 	    threadPool.execute(new Runnable() {
 
 	      public void run() {
-	    	List<Contributor> contributors = Datastore.getContributors();
-  	        List<Contributor> subscriptors = Datastore.getSubscriptors();
+	    	List<Contributor> contributors = datastore.getContributors();
+  	        List<Contributor> subscriptors = datastore.getSubscriptors();
   	        logger.info("nb Contributors :" + String.valueOf(contributors.size()));
   	        Message message = new Message.Builder().addData("nbContributors", String.valueOf(contributors.size()))
   	        		.addData("nbSubscriptors", String.valueOf(subscriptors.size())).build();
@@ -132,14 +135,14 @@ public class DevelopersThread implements Runnable{
 	            if (canonicalRegId != null) {
 	              // same device has more than on registration id: update it
 	              logger.info("canonicalRegId " + canonicalRegId);
-	              Datastore.updateRegistration(regId, canonicalRegId);
+	              datastore.updateRegistration(regId, canonicalRegId);
 	            }
 	          } else {
 	            String error = result.getErrorCodeName();
 	            if (error.equals(Constants.ERROR_NOT_REGISTERED)) {
 	              // application has been removed from device - unregister it
 	              logger.info("Unregistered device: " + regId);
-	              Datastore.unregister(regId);
+	              datastore.unregister(regId);
 	            } else {
 	              logger.severe("Error sending message to " + regId + ": " + error);
 	            }

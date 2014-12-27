@@ -19,6 +19,8 @@ package org.saaas.server;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,12 +39,21 @@ public class HomeServlet extends BaseServlet {
   /**
    * Displays the existing messages and offer the option to send a new one.
    */
+  Datastore datastore;
+ 
+  @Override
+	  public void init(ServletConfig config) throws ServletException {
+	    super.init(config);
+            datastore=new Datastore();
+	  }
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
+     
+ 
     resp.setContentType("text/html");
     PrintWriter out = resp.getWriter();
-
+    
     out.print("<html><body>");
     out.print("<head>");
     out.print("  <title>SAaaS Server</title>");
@@ -52,10 +63,10 @@ public class HomeServlet extends BaseServlet {
     if (status != null) {
       out.print(status);
     }
-    List<Registrant> devices = Datastore.getDevicesFromDb();
-    List<Contributor> subscriptors = Datastore.getSubscriptors();//must change
-    List<Contributor> contributors = Datastore.getAvailableContributors();
-    List<Registrant> developers = Datastore.getDevelopers();//must change
+    List<Registrant> devices = datastore.getDevicesFromDb();
+    List<Contributor> subscriptors = datastore.getSubscriptors();//must change
+    List<Contributor> contributors = datastore.getAvailableContributors();
+    List<Registrant> developers = datastore.getDevelopers();//must change
     if (devices.isEmpty()) {
       out.print("<h2>No devices registered!</h2>");
     } else {

@@ -25,13 +25,16 @@ public class GetAllContributors extends BaseServlet {
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
       //fix ebala keni egrafi edw
+     Datastore datastore;
+      datastore=new Datastore();
       // dummy gcm endpoint
-      Datastore.register("123456789111111", "1", "0.0.0.0", Timestamp.valueOf("2013-10-10 12:12:12"),"");
+      datastore.register("123456789111111", "1", "0.0.0.0", Timestamp.valueOf("2013-10-10 12:12:12"),"");
       //
+      
       
       // JSON all contributors. THINK: Will SAaaS server decide which contribs to expose to each app served by it?
       JSONObject json = new JSONObject();
-      List<Contributor> contr = Datastore.getContributors();
+      List<Contributor> contr = datastore.getContributors();
       for(int i = 0 ; i < contr.size() ; i++){
           json.put(i, contr.get(i).getRegId());
       }

@@ -16,7 +16,6 @@ import org.apache.commons.codec.binary.Base64;
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author Administrator
@@ -38,15 +37,16 @@ public class NewMain {
             String b64str = new String(Base64.encodeBase64(buf, false, true));
             String serverUrl = "http://localhost:8080/saaas-server/" + "/getcontributors";
             Map<String, String> par = new HashMap<String, String>();
-            par.put("nb_contributors", "1");
+            par.put("nb_contributors", "7");
             par.put("application_content", b64str);
-            par.put("application_name", "tester_application");
+            par.put("application_name", "test_application1");
             post(serverUrl, par);
             //ValueEstimator.addtoMap(new CostProfile("",0,0,0,38.057509,23.808519),map);
         } catch (IOException ex) {
             Logger.getLogger(NewMain.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
     private static void post(String endpoint, Map<String, String> params)
             throws IOException {
         URL url;
@@ -86,13 +86,13 @@ public class NewMain {
             int status = conn.getResponseCode();
             String s = conn.getResponseMessage();
             if (status != 200) {
-              throw new IOException("Post failed with error code " + status+s);
+                throw new IOException("Post failed with error code " + status + s);
             }
         } finally {
             if (conn != null) {
                 conn.disconnect();
             }
         }
-      }
+    }
 
 }
