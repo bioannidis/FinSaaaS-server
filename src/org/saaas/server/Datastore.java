@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,48 +47,71 @@ public final class Datastore {
     private static final List<Booking> bookings = new ArrayList<Booking>();
     private static final Logger logger
             = Logger.getLogger(Datastore.class.getName());
-    private static final long delay_between_updates = 15000;
+    private static final long delay_between_updates = 20000;
     static String connectionURL = "jdbc:mysql://localhost:3306/saas_project";
+    public static Map<String, Timestamp> map;
     private static Connection connection = null;
     int rs = 0;
+    private static Datastore ds = new Datastore();
+
+    public static Datastore getInstance() {
+        return ds;
+    }
     /*
+     private Datastore() {
+     throw new UnsupportedOperationException();
+     }*/
+
     private Datastore() {
-        throw new UnsupportedOperationException();
-    }*/
-    public Datastore(){
-        
+
         try {
             PreparedStatement statement = null;
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             connection = DriverManager.getConnection(connectionURL, "root", "");
-        }
-        catch (Exception e) {
+            map = new HashMap<String, Timestamp>();
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
     }
-    /* @Override
-    protected void finalize(){
-    if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
+
+    @Override
+    protected void finalize() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
             }
-        
-    }*/
+        }
+
+    }
+
+    public static Connection getConnection() {
+        return connection;
+    }
+
+    public static void setConnection() {
+        try {
+            PreparedStatement statement = null;
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            connection = DriverManager.getConnection(connectionURL, "root", "");
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
     /*
      finds availability through last available
      time updated may need fixing
      */
-    public static final Map<String, Timestamp> map = new HashMap<String, Timestamp>();
 
     private static boolean get_state(String regId) {
         boolean avail = false;
         if (map.get(regId) == null) {
-        //prosoxi edw fix
+            //prosoxi edw fix
             // SOS FIX THIS
             //System.out.println("bike edw gg");
             setReachabilityDB(regId, false);
@@ -132,7 +156,7 @@ public final class Datastore {
             statement.setString(1, bid);
             statement.executeUpdate();
 
-                        //fix current.setTimestamp(rs.getString(8));
+            //fix current.setTimestamp(rs.getString(8));
             // System.out.println("updatebookingdb "+ statement.getResultSet().toString());
             //System.out.println("egine to updateRegDbcon");
         } catch (Exception e) {
@@ -166,7 +190,7 @@ public final class Datastore {
                 setbooking(bId, current);
             }
 
-                   //     System.out.println("sendToDbBook "+ statement.getResultSet().toString());
+            //     System.out.println("sendToDbBook "+ statement.getResultSet().toString());
             //System.out.println("egine to update");
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -204,7 +228,6 @@ public final class Datastore {
 
             //Class.forName("com.mysql.jdbc.Driver").newInstance();
             //connection = DriverManager.getConnection(connectionURL, "root", "");
-
             System.out.println("sinde8ika me basi");
             String sqle = "select * from Contributors where regId=?;";
             statement = connection.prepareStatement(sqle);
@@ -233,7 +256,6 @@ public final class Datastore {
 
             //Class.forName("com.mysql.jdbc.Driver").newInstance();
             //connection = DriverManager.getConnection(connectionURL, "root", "");
-
             System.out.println("sinde8ika me basi");
             String sqle = "select * from Subscriptors where regId=?;";
             statement = connection.prepareStatement(sqle);
@@ -262,7 +284,6 @@ public final class Datastore {
 
             //Class.forName("com.mysql.jdbc.Driver").newInstance();
             //connection = DriverManager.getConnection(connectionURL, "root", "");
-
             System.out.println("sinde8ika me basi");
             String sqle = "select * from devices where regId=?;";
             statement = connection.prepareStatement(sqle);
@@ -553,9 +574,9 @@ public final class Datastore {
             Registrant device = new Registrant();
             //bill
 
-            Timestamp mytime = new Timestamp(Calendar.getInstance().getTime().getTime());
-
+            Timestamp mytime = time;
             map.put(regId, mytime);
+            System.out.println("size of map " + map.size());
             device.setUserName(user);
             device.setRegId(regId);
             device.setIpAddress(addressIp);
@@ -712,7 +733,6 @@ public final class Datastore {
 
             //Class.forName("com.mysql.jdbc.Driver").newInstance();
             //connection = DriverManager.getConnection(connectionURL, "root", "");
-
             System.out.println("sinde8ika me basi");
             String sqle = "select * from Devices where regId=?;";
             statement = connection.prepareStatement(sqle);
@@ -742,19 +762,20 @@ public final class Datastore {
     }
 
     public static Registrant getDevice(String regId) {
-        /*
-         logger.log(Level.INFO, "Getting handle of device with reg. ID: {0}", regId);
-         Registrant dev=getDeviceFromDb(regId);
-         Registrant current = null;
-         synchronized (devices) {
-         Iterator<Registrant> dev_it = devices.iterator();
-         while(dev_it.hasNext())
-         {
-         current = dev_it.next();
-         if(current.getRegId().equals(regId)) break;
-         }
-         }*/
-        return getDeviceFromDb(regId);
+
+        logger.log(Level.INFO, "Getting handle of device with reg. ID: {0}", regId);
+
+        Registrant current = null;
+        synchronized (devices) {
+            Iterator<Registrant> dev_it = devices.iterator();
+            while (dev_it.hasNext()) {
+                current = dev_it.next();
+                if (current.getRegId().equals(regId)) {
+                    break;
+                }
+            }
+        }
+        return current;
     }
 
     public static Contributor getContributorFromDb(String regId) {
@@ -782,7 +803,7 @@ public final class Datastore {
                 current.setTTL(rs.getInt(9));
                 current.setTimestamp(Timestamp.valueOf(rs.getString(8)));
             }
-                        //System.out.println("getContributorFromDb "+ statement.getResultSet().toString());
+            //System.out.println("getContributorFromDb "+ statement.getResultSet().toString());
             //System.out.println("egine to update");
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -797,17 +818,20 @@ public final class Datastore {
 
     public static Contributor getContributor(String regId) {
         //logger.log(Level.INFO, "Getting handle of contributor with reg. ID: {0}", regId);
-       /* Contributor current = null;
-         Contributor con=getContributorFromDb(regId);
-         synchronized (contributors) {
-         Iterator<Contributor> con_it = contributors.iterator();
-         while(con_it.hasNext())
-         {
-         current = con_it.next();
-         if(current.getRegId().equals(regId)) break;
-         }
-         }*/
-        return getContributorFromDb(regId);
+        Contributor current = null, avail = null;
+
+        synchronized (contributors) {
+            Iterator<Contributor> con_it = contributors.iterator();
+            while (con_it.hasNext()) {
+                current = con_it.next();
+                if (current.getRegId().equals(regId)) {
+                    avail = current;
+                    break;
+                }
+            }
+        }
+
+        return avail;
     }
 
     /**
@@ -893,18 +917,18 @@ public final class Datastore {
     }
 
     public static Booking getBooking(String bookingId) {
-        Booking book = getBookingFromDb(bookingId);
-        /*logger.log(Level.INFO, "Getting handle of booking with booking ID: {0}", bookingId);
-         Booking current = null;
-         synchronized (bookings) {
-         Iterator<Booking> book_it = bookings.iterator();
-         while(book_it.hasNext())
-         {
-         current = book_it.next();
-         if(current.getBookingId().equals(bookingId)) break;
-         }
-         }*/
-        return book;
+        logger.log(Level.INFO, "Getting handle of booking with booking ID: {0}", bookingId);
+        Booking current = null;
+        synchronized (bookings) {
+            Iterator<Booking> book_it = bookings.iterator();
+            while (book_it.hasNext()) {
+                current = book_it.next();
+                if (current.getBookingId().equals(bookingId)) {
+                    break;
+                }
+            }
+        }
+        return current;
     }
 
 //  /**
@@ -1123,59 +1147,48 @@ public final class Datastore {
     }
 
     public static void updateRegistration(String oldId, String newId) {
-        updateRegDbCon(oldId, newId);
-        updateRegDbDeve(oldId, newId);
-        updateRegDbDevi(oldId, newId);
-        updateRegDbSub(oldId, newId);
-        /*logger.log(Level.INFO, "Updating {0} to {1}", new Object[]{oldId, newId});
-         synchronized (devices) {    
-         Iterator<Registrant> dev_it = devices.iterator();
-         while(dev_it.hasNext())
-         {
-         Registrant current = dev_it.next();
-         if(current.getRegId().equals(oldId))
-         {
-         dev_it.remove();
-         current.setRegId(newId);
-         devices.add(current);
-         }
-         }
-         Iterator<Contributor> con_it = contributors.iterator();
-         while(con_it.hasNext())
-         {
-         Contributor current = con_it.next();
-         if(current.getRegId().equals(oldId))
-         {
-         con_it.remove();
-         current.setRegId(newId);
-         contributors.add(current);
-         updateRegDbCon(oldId,newId);
-         }
-         }
-         Iterator<Contributor> sub_it = subscriptors.iterator();
-         while(sub_it.hasNext())
-         {
-         Contributor current = sub_it.next();
-         if(current.getRegId().equals(oldId))
-         {
-         sub_it.remove();
-         current.setRegId(newId);
-         subscriptors.add(current);
-         updateRegDbSub(oldId,newId);
-         }
-         }    
-         Iterator<Registrant> dvl_it = developers.iterator();
-         while(dvl_it.hasNext())
-         {
-         Registrant current = dvl_it.next();
-         if(current.getRegId().equals(oldId))
-         {
-         dvl_it.remove();
-         current.setRegId(newId);
-         developers.add(current);
-         }
-         }
-         }*/
+
+        logger.log(Level.INFO, "Updating {0} to {1}", new Object[]{oldId, newId});
+        synchronized (devices) {
+            Iterator<Registrant> dev_it = devices.iterator();
+            while (dev_it.hasNext()) {
+                Registrant current = dev_it.next();
+                if (current.getRegId().equals(oldId)) {
+                    dev_it.remove();
+                    current.setRegId(newId);
+                    devices.add(current);
+                }
+            }
+            Iterator<Contributor> con_it = contributors.iterator();
+            while (con_it.hasNext()) {
+                Contributor current = con_it.next();
+                if (current.getRegId().equals(oldId)) {
+                    con_it.remove();
+                    current.setRegId(newId);
+                    contributors.add(current);
+                    updateRegDbCon(oldId, newId);
+                }
+            }
+            Iterator<Contributor> sub_it = subscriptors.iterator();
+            while (sub_it.hasNext()) {
+                Contributor current = sub_it.next();
+                if (current.getRegId().equals(oldId)) {
+                    sub_it.remove();
+                    current.setRegId(newId);
+                    subscriptors.add(current);
+                    updateRegDbSub(oldId, newId);
+                }
+            }
+            Iterator<Registrant> dvl_it = developers.iterator();
+            while (dvl_it.hasNext()) {
+                Registrant current = dvl_it.next();
+                if (current.getRegId().equals(oldId)) {
+                    dvl_it.remove();
+                    current.setRegId(newId);
+                    developers.add(current);
+                }
+            }
+        }
     }
 
     /**
@@ -1207,7 +1220,7 @@ public final class Datastore {
                 current.setTTL(rs.getInt(6));
                 Devices.add(current);
             }
-                        //System.out.println("getDevicesFromDb "+ statement.getResultSet().toString());
+            //System.out.println("getDevicesFromDb "+ statement.getResultSet().toString());
             //System.out.println("egine to update");
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -1242,7 +1255,7 @@ public final class Datastore {
             statement.setBoolean(1, reach);
             statement.executeUpdate();
 
-                        //fix current.setTimestamp(rs.getString(8));
+            //fix current.setTimestamp(rs.getString(8));
             //System.out.println("updateRegDbcon "+ statement.getResultSet().toString());
             //System.out.println("egine to updateRegDbcon");
         } catch (Exception e) {
@@ -1270,7 +1283,7 @@ public final class Datastore {
 
             int i = statement.executeUpdate();
 
-                        //fix current.setTimestamp(rs.getString(8));
+            //fix current.setTimestamp(rs.getString(8));
             // System.out.println("updateRegDbcon "+ i);
             //System.out.println("egine to updateRegDbcon");
         } catch (Exception e) {
@@ -1299,7 +1312,7 @@ public final class Datastore {
             statement.setBoolean(1, reach);
             statement.executeUpdate();
 
-                        //fix current.setTimestamp(rs.getString(8));
+            //fix current.setTimestamp(rs.getString(8));
             //System.out.println("updateRegDbcon "+ statement.getResultSet().toString());
             //System.out.println("egine to updateRegDbcon");
         } catch (Exception e) {
@@ -1399,7 +1412,7 @@ public final class Datastore {
                     Devices.add(current);
                 }
             }
-                        //System.out.println("getavailable contr");
+            //System.out.println("getavailable contr");
             //System.out.println("egine to update");
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -1524,20 +1537,18 @@ public final class Datastore {
     }
 
     public static List<Contributor> getReachableContributors() {
-        synchronized (contributors) {/*
-             List<Contributor> reachableContributors = new ArrayList<Contributor>();
-             Iterator<Contributor> con_it = contributors.iterator();
-             while(con_it.hasNext())
-             {
-             Contributor current = con_it.next();
-             if(current.getReachability())
-             {
-             reachableContributors.add(current);
-             }
-             }*/
+        synchronized (contributors) {
+            List<Contributor> reachableContributors = new ArrayList<Contributor>();
+            Iterator<Contributor> con_it = contributors.iterator();
+            while (con_it.hasNext()) {
+                Contributor current = con_it.next();
+                if (current.getReachability()) {
+                    reachableContributors.add(current);
+                }
+            }
 
             //edit
-            return getReachableContributorsFromDb();
+            return reachableContributors;
         }
     }
 
@@ -1600,7 +1611,6 @@ public final class Datastore {
             String sqle = "select * from Contributors;";
             statement = connection.prepareStatement(sqle);
             ResultSet rs = statement.executeQuery();
-
             while (rs.next()) {
 
                 Contributor current = new Contributor(new Registrant());
@@ -1617,7 +1627,8 @@ public final class Datastore {
                     availableContributors.add(current);
                 }
             }
-            System.out.println("getravailableContributorFromDb " + statement.getResultSet());
+            rs.last();
+            System.out.println("getravailableContributorFromDb size " + rs.getRow() + " size of map " + map.size());
             //System.out.println("egine to update");
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -1631,20 +1642,46 @@ public final class Datastore {
     }
 
     public static List<Contributor> getAvailableContributors() {
-        synchronized (contributors) {/*
-             List<Contributor> availableContributors = new ArrayList<Contributor>();
-             Iterator<Contributor> con_it = contributors.iterator();
-             while(con_it.hasNext())
-             {
-             Contributor current = con_it.next();
-             if(current.getAvailability())
-             {
-             availableContributors.add(current);
-             }
-             }*/
-
-            return getAvailableContributorsFromDb();
+        List<Contributor> availableContributors = new ArrayList<Contributor>();
+        Iterator itr = map.entrySet().iterator();
+        while (itr.hasNext()) {
+            Entry entry = (Entry) itr.next();
+            String id = (String) entry.getKey();
+            long start = ((Timestamp) entry.getValue()).getTime();
+            Date date = new Date();
+            long now = date.getTime();
+            if (start + delay_between_updates > now) {
+                Contributor cont = getContributor(id);
+                if (cont != null) {
+                    availableContributors.add(cont);
+                } else {
+                    System.out.println("psaxnw stin dB kai to bazw stin lista twn cont ");
+                    cont = getContributorFromDb(id);
+                    contributors.add(cont);
+                    availableContributors.add(cont);
+                }
+            }
         }
+        System.out.println("available contributors"
+                + " size" + availableContributors.size());
+
+        return availableContributors;
+        /*
+         synchronized (contributors) {
+         List<Contributor> availableContributors = new ArrayList<Contributor>();
+         Iterator<Contributor> con_it = contributors.iterator();
+         while(con_it.hasNext())
+         {
+         Contributor current = con_it.next();
+         if(current.getAvailability())
+         {
+         availableContributors.add(current);
+         }
+         }
+
+         return availableContributors;
+         }
+         */
     }
 
     /**

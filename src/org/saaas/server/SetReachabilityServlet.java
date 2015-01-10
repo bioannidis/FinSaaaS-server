@@ -37,7 +37,7 @@ public class SetReachabilityServlet extends BaseServlet {
   @Override
 	  public void init(ServletConfig config) throws ServletException {
 	    super.init(config);
-            datastore=new Datastore();
+            datastore=Datastore.getInstance();
 	  }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)

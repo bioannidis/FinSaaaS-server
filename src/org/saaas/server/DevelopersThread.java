@@ -29,7 +29,7 @@ public class DevelopersThread implements Runnable{
 		this.sender = sender;
 		t = new Thread(this);
 		t.start();
-                datastore=new Datastore();
+                datastore=Datastore.getInstance();
 	}
 
 

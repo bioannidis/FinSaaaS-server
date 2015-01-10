@@ -2,14 +2,17 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.saaas.server;
+package org.saaas.server.selectionalgorithm;
 
+import org.saaas.server.selectionalgorithm.DBCalls;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
+import org.saaas.server.Contributor;
+import org.saaas.server.Datastore;
 
 /**
  *
@@ -18,14 +21,23 @@ import java.util.TreeMap;
 public class AlgoChoise {
     private static Datastore datastore;
     private static DBCalls dbCalls;
+       /*
+     *USE : Delta helpts to obtain a slight underestimate in the limit 
+     *so that the budjet will be not wasted
+     * must be tested in the simulation
+     */
+    private static double delta_for_fixing_the_limit = 0.8;
+    private static mapfromXmltrack map;
+    private static int sensing_times = 10;
+    private static double point_range = 0.018;
+    protected static boolean point_coverBool;
     public AlgoChoise(){
-        datastore=new Datastore();
-        dbCalls=new DBCalls();
+        
     }
     private static List<CostProfile> select_available_users() {
         List<CostProfile> costprof = new ArrayList<CostProfile>();
         //testing List<Contributor> availableContributors=datastore.getAvailableContributorsFromDb();
-        List<Contributor> availableContributors = datastore.getAvailableContributors();//erase after tests
+        List<Contributor> availableContributors = datastore.getAvailableContributors();
         // System.out.println(availableContributors.size());
         Iterator<Contributor> itr = availableContributors.iterator();
         while (itr.hasNext()) {
@@ -42,16 +54,7 @@ public class AlgoChoise {
     }
 
     //for testing only
-    /*
-     *USE : Delta helpts to obtain a slight underestimate in the limit 
-     *so that the budjet will be not wasted
-     * must be tested in the simulation
-     */
-    private static double delta_for_fixing_the_limit = 0.8;
-    private static mapfromXmltrack map;
-    private static int sensing_times = 10;
-    private static double point_range = 0.018;
-    protected static boolean point_coverBool;
+ 
     /*for testing
      private static List <CostProfile> select_available_users(){
      List <CostProfile> costprof=new ArrayList<CostProfile>();
@@ -263,6 +266,8 @@ public class AlgoChoise {
     }
     
     public static List<String> select_winner_to_deploy_online(int user_to_deploy, int Time, int Budget, boolean point_cover) {
+        datastore=Datastore.getInstance();
+        dbCalls=DBCalls.getInstance();
         long start = System.currentTimeMillis();
         List<CostProfile> selected = new ArrayList<CostProfile>();
         List<CostProfile> to_select = new ArrayList<CostProfile>();

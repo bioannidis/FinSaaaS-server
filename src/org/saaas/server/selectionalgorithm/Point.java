@@ -4,7 +4,9 @@
  * and open the template in the editor.
  */
 
-package org.saaas.server;
+package org.saaas.server.selectionalgorithm;
+
+import org.saaas.server.GeoLocation;
 
 /**
  *

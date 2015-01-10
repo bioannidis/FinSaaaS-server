@@ -26,7 +26,7 @@ public class GetAllContributors extends BaseServlet {
       throws ServletException, IOException {
       //fix ebala keni egrafi edw
      Datastore datastore;
-      datastore=new Datastore();
+      datastore=Datastore.getInstance();
       // dummy gcm endpoint
       datastore.register("123456789111111", "1", "0.0.0.0", Timestamp.valueOf("2013-10-10 12:12:12"),"");
       //

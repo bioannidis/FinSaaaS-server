@@ -6,10 +6,14 @@
 
 package org.saaas.server;
 
+import org.saaas.server.selectionalgorithm.DBCalls;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -27,8 +31,8 @@ public class ResetTimerServlet extends BaseServlet {
   @Override
 	  public void init(ServletConfig config) throws ServletException {
 	    super.init(config);
-            datastore=new Datastore();
-             dbCalls =new DBCalls();
+            datastore=Datastore.getInstance();
+             dbCalls =DBCalls.getInstance();
 	  }
      
     
@@ -46,6 +50,14 @@ public class ResetTimerServlet extends BaseServlet {
         String regId = getParameter(req, PARAMETER_REG_ID);
        // System.out.println("reset timer");
         //bill
+        try {
+            if(datastore.getConnection().isClosed())
+                datastore.setConnection();
+            if(dbCalls.getConnection().isClosed())
+                dbCalls.setConnection();
+        } catch (SQLException ex) {
+            Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         
         if(regId!=null){

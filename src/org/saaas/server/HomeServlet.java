@@ -18,10 +18,12 @@ package org.saaas.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -44,12 +46,18 @@ public class HomeServlet extends BaseServlet {
   @Override
 	  public void init(ServletConfig config) throws ServletException {
 	    super.init(config);
-            datastore=new Datastore();
+            datastore=Datastore.getInstance();
 	  }
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
-     
+     try {
+            if(datastore.getConnection().isClosed())
+                datastore.setConnection();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
  
     resp.setContentType("text/html");
     PrintWriter out = resp.getWriter();
@@ -65,7 +73,7 @@ public class HomeServlet extends BaseServlet {
     }
     List<Registrant> devices = datastore.getDevicesFromDb();
     List<Contributor> subscriptors = datastore.getSubscriptors();//must change
-    List<Contributor> contributors = datastore.getAvailableContributors();
+    List<Contributor> contributors = datastore.getAvailableContributors();//FromDb();
     List<Registrant> developers = datastore.getDevelopers();//must change
     if (devices.isEmpty()) {
       out.print("<h2>No devices registered!</h2>");

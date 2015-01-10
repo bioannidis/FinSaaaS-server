@@ -15,6 +15,8 @@
  */
 package org.saaas.server;
 
+import org.saaas.server.selectionalgorithm.DBCalls;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.logging.Level;
@@ -36,52 +38,61 @@ import javax.servlet.http.HttpServletResponse;
 @SuppressWarnings("serial")
 public class RegisterServlet extends BaseServlet {
 
-  private static final String PARAMETER_REG_ID = "regId";
-  private static final String PARAMETER_TYPE = "type";
-  private static final String PARAMETER_IP = "ip";
-  private static final String PARAMETER_TIME = "timestamp";
- 
-  private static final String PARAMETER_USERNAME = "user";
-   Datastore datastore;
- 
-  @Override
-	  public void init(ServletConfig config) throws ServletException {
-	    super.init(config);
-            datastore=new Datastore();
-	  }
-   
-  private final Logger clogger = Logger.getLogger(getClass().getName());
-  @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException {
-       System.out.println("8a ginei register" );
-    String regId = getParameter(req, PARAMETER_REG_ID);
-    String type = getParameter(req, PARAMETER_TYPE);
-    String ip = getParameter(req, PARAMETER_IP);
-    String timeS = getParameter(req, PARAMETER_TIME);
-    String user=getParameter(req,PARAMETER_USERNAME);
-    
-    
-    DBCalls dbCalls =new DBCalls();
-   // System.out.println("egine to register" +regId);
-    double lat=Double.parseDouble(getParameter(req,"latitude"));
-    double lon=Double.parseDouble(getParameter(req,"longitude"));
-    float local_cost=Float.parseFloat(getParameter(req,"local_cost"));
-    Timestamp time = Timestamp.valueOf(timeS);
-    clogger.log(Level.INFO, "Registration ID: {0}, Type: {1} IP: {2} Timestamp: {3} ", new String[] { regId, type, ip, timeS });
-    //pros8iki orismatos sto datastore
-    //akoma kalitero na pernagame ena hashmap ws
-    //orisma
-    datastore.register(regId, type, ip, time,user);
-    if(dbCalls.exist_in_db_us(regId)){
- 
-        dbCalls.update_cost(regId, local_cost,lat,lon);
+    private static final String PARAMETER_REG_ID = "regId";
+    private static final String PARAMETER_TYPE = "type";
+    private static final String PARAMETER_IP = "ip";
+    private static final String PARAMETER_TIME = "timestamp";
+
+    private static final String PARAMETER_USERNAME = "user";
+    Datastore datastore;
+    DBCalls dbCalls;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        datastore = Datastore.getInstance();
+        dbCalls = DBCalls.getInstance();
     }
-    else 
-        dbCalls.new_user(regId, local_cost,lat,lon);
-    
-    System.out.println("egine to register" +regId);
-    setSuccess(resp);
-  }
+
+    private final Logger clogger = Logger.getLogger(getClass().getName());
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException {
+        try {
+            if(datastore.getConnection().isClosed())
+                datastore.setConnection();
+            if(dbCalls.getConnection().isClosed())
+                dbCalls.setConnection();
+        } catch (SQLException ex) {
+            Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("8a ginei register");
+        String regId = getParameter(req, PARAMETER_REG_ID);
+        String type = getParameter(req, PARAMETER_TYPE);
+        String ip = getParameter(req, PARAMETER_IP);
+        String timeS = getParameter(req, PARAMETER_TIME);
+        String user = getParameter(req, PARAMETER_USERNAME);
+
+        // System.out.println("egine to register" +regId);
+        double lat = Double.parseDouble(getParameter(req, "latitude"));
+        double lon = Double.parseDouble(getParameter(req, "longitude"));
+        float local_cost = Float.parseFloat(getParameter(req, "local_cost"));
+        Timestamp time = Timestamp.valueOf(timeS);
+        clogger.log(Level.INFO, "Registration ID: {0}, Type: {1} IP: {2} Timestamp: {3} ", new String[]{regId, type, ip, timeS});
+    //pros8iki orismatos sto datastore
+        //akoma kalitero na pernagame ena hashmap ws
+        //orisma
+        datastore.register(regId, type, ip, time, user);
+        if (dbCalls.exist_in_db_us(regId)) {
+
+            dbCalls.update_cost(regId, local_cost, lat, lon);
+        } else {
+            dbCalls.new_user(regId, local_cost, lat, lon);
+        }
+
+        System.out.println("egine to register" + regId);
+        setSuccess(resp);
+    }
 
 }

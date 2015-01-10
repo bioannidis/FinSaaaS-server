@@ -1,22 +1,22 @@
 package org.saaas.server;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.google.android.gcm.server.Constants;
 import com.google.android.gcm.server.Message;
 import com.google.android.gcm.server.MulticastResult;
 import com.google.android.gcm.server.Result;
 import com.google.android.gcm.server.Sender;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
 public class SendAllContributorMessagesServlet extends BaseServlet{
@@ -31,7 +31,7 @@ public class SendAllContributorMessagesServlet extends BaseServlet{
 	  public void init(ServletConfig config) throws ServletException {
 	    super.init(config);
 	    sender = newSender(config);
-            datastore=new Datastore();
+            datastore=Datastore.getInstance();
 	  }
 
 	  /**
@@ -49,6 +49,13 @@ public class SendAllContributorMessagesServlet extends BaseServlet{
 	  @Override
 	  protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	      throws IOException, ServletException {
+              try {
+            if(datastore.getConnection().isClosed())
+                datastore.setConnection();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
 	    List<Contributor> devices = datastore.getContributors();
 	    String status;
 	    if (devices.isEmpty()) {

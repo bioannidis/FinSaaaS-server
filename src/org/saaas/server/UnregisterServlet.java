@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @SuppressWarnings("serial")
 public class UnregisterServlet extends BaseServlet {
-  Datastore datastore =new Datastore();
+  Datastore datastore =Datastore.getInstance();
   private static final String PARAMETER_REG_ID = "regId";
 
   @Override

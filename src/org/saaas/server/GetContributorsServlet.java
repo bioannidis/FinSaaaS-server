@@ -1,15 +1,18 @@
 package org.saaas.server;
 
+import org.saaas.server.selectionalgorithm.AlgoChoise;
 import com.google.android.gcm.server.Message;
 import com.google.android.gcm.server.MulticastResult;
 import com.google.android.gcm.server.Result;
 import com.google.android.gcm.server.Sender;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +36,7 @@ public class GetContributorsServlet extends BaseServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         sender = newSender(config);
-        datastore=new Datastore();
+        datastore=Datastore.getInstance();
         algoChoise=new AlgoChoise();
           
     }
@@ -53,6 +56,13 @@ public class GetContributorsServlet extends BaseServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        try {
+            if(datastore.getConnection().isClosed())
+                datastore.setConnection();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
         logger.info("Reception requete getcontributors");
         String nb = getParameter(req, PARAMETER_NB_CONTRIBUTORS);
         number = Integer.valueOf(nb);

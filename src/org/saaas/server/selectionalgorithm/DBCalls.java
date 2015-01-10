@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.saaas.server;
+package org.saaas.server.selectionalgorithm;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.saaas.server.Datastore;
 
 /**
  *
@@ -25,9 +26,31 @@ import java.util.logging.Logger;
 public final class DBCalls {
 
     static String connectionURL = "jdbc:mysql://localhost:3306/saas_project";
-    public static final Map<String, CostProfile> cost_map = new HashMap<String, CostProfile>();
-    static Connection connection = null;
-    public DBCalls() {
+    private static final Map<String, CostProfile> cost_map = new HashMap<String, CostProfile>();
+    
+    
+    private static Connection connection = null;
+    private static DBCalls dbCalls=new DBCalls();
+    public static DBCalls getInstance( ) {
+      return dbCalls;
+    }
+    public static Connection getConnection() {
+        return connection;
+    }
+   
+    public static void setConnection() {
+         try {
+            PreparedStatement statement = null;
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            connection = DriverManager.getConnection(connectionURL, "root", "");
+        }
+        catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+   
+    private DBCalls() {
         
         try {
            Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -37,7 +60,7 @@ public final class DBCalls {
         }
     }
     
-    /* @Override
+     @Override
     protected void finalize(){
     if (connection != null) {
                 try {
@@ -47,7 +70,7 @@ public final class DBCalls {
                 }
             }
         
-    }*/
+    }
     public static void new_user(String regId, float local_cost, double lat, double lon) {
         sendToDbUser(regId, local_cost, 0, 0, lat, lon, 0);
         cost_map.put(regId, new CostProfile(regId, local_cost, getUserPart(regId), 0, lat, lon));
@@ -269,7 +292,7 @@ public final class DBCalls {
 
     public static CostProfile getUser(String regId) {
         CostProfile late_insert = cost_map.get(regId);
-        updateDbUser(late_insert.regId, late_insert.local_cost, late_insert.lat, late_insert.lon);
+        /*updateDbUser(late_insert.regId, late_insert.local_cost, late_insert.lat, late_insert.lon);
         //Connection connection = null;
         CostProfile costprof = null;
         try {
@@ -300,7 +323,7 @@ public final class DBCalls {
             }
         }*/
 
-        return costprof;
+        return late_insert;
     }
 
     public static void informDbforSelect(String regId) {

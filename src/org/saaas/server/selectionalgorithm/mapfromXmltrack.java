@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.saaas.server;
+package org.saaas.server.selectionalgorithm;
 
 import java.io.File;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.saaas.server.GeoLocation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
