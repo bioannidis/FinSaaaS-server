@@ -23,13 +23,16 @@ import org.json.simple.JSONObject;
 public class GetContributorsServlet extends BaseServlet {
 
     private static final String PARAMETER_NB_CONTRIBUTORS = "nb_contributors";
+    private static final String PARAMETER_budget = "budget";
+    private static final String PARAMETER_evaluation_time = "evaluation_time";
+    private static final String PARAMETER_Type_algo = "algorithm";
     private static final String PARAMETER_APP_NAME = "application_name";
     private static final String PARAMETER_APP_CONTENT = "application_content";
     private Sender sender;
     private Datastore datastore;
     private AlgoChoise algoChoise;
-    int number;
-    String appName;
+    int number_of_contributors,evaluation_time,budget;
+    String appName,algorithm;
     String appContent;
 
     @Override
@@ -65,11 +68,14 @@ public class GetContributorsServlet extends BaseServlet {
         }
         logger.info("Reception requete getcontributors");
         String nb = getParameter(req, PARAMETER_NB_CONTRIBUTORS);
-        number = Integer.valueOf(nb);
+        number_of_contributors = Integer.valueOf(nb);
+        budget=Integer.valueOf(getParameter(req, PARAMETER_budget));
+        evaluation_time=Integer.valueOf(getParameter(req, PARAMETER_evaluation_time));
+        algorithm=(getParameter(req, PARAMETER_Type_algo));
         appName = getParameter(req, PARAMETER_APP_NAME);
-        logger.log(Level.INFO, "number: {0} appName : {1}", new Object[]{number, appName});
+        logger.log(Level.INFO, "number: {0} appName : {1}", new Object[]{number_of_contributors, appName});
         appContent = getParameter(req, PARAMETER_APP_CONTENT);
-        logger.log(Level.INFO, "number: {0} appName : {1}", new Object[]{number, appName});
+        logger.log(Level.INFO, "number: {0} appName : {1}", new Object[]{number_of_contributors, appName});
 
 ////	    List<Contributor> avail = datastore.getContributors();
         //edw 8a adikatastisw to available Contributors me klisi stin dikia m klasi
@@ -125,9 +131,9 @@ public class GetContributorsServlet extends BaseServlet {
 //		}
 
         //if (number <= avail.size()) { no need for this
-        int count = 0;
+       /* int count = 0;
         Iterator<Contributor> con_it = avail.iterator();
-        while (count < number && con_it.hasNext()) {
+        while (count < number_of_contributors && con_it.hasNext()) {
             Contributor current = con_it.next();
 ////                    boolean status = sendMessage(current);
 ////                    if(status){
@@ -145,20 +151,22 @@ public class GetContributorsServlet extends BaseServlet {
 ////                    }
             }                                                   ////
         }
-        Long uuid = System.currentTimeMillis();
+        
         datastore.book(uuid.toString(), selected, appName);
         //  Datastore.getBooking(uuid.toString()).setTimer();
 
-        List<String> selected_strings = new ArrayList<String>();
+        
         Iterator<Contributor> select_it = selected.iterator();
         while (select_it.hasNext()) {
             Contributor curr = select_it.next();
             selected_strings.add(curr.getRegId());
-        }
+        }*/
+        Long uuid = System.currentTimeMillis();
+        List<String> selected_strings = new ArrayList<String>();
         //bill algo select  
         int value_of_task = 10;
-     
-        selected_strings =algoChoise.select_winner_to_deploy_online(number, 180, 130/* must be something like appName.value_of_task*/,true);
+        if(algorithm.equals("online"))
+        selected_strings =algoChoise.select_winner_to_deploy_online(number_of_contributors,evaluation_time,budget,true);
         System.out.println("epilegmenoi xristes" + selected_strings.toString());
         //bill
         datastore.sendToDbBook(uuid.toString(), selected_strings, appName);

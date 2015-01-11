@@ -20,32 +20,36 @@ import org.apache.commons.codec.binary.Base64;
  *
  * @author Administrator
  */
-public class NewMain {
+public class ServletAccess {
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        try {
+   public void Call_algorithm(String nbContributors,String budget,String evaluation_time,String algoType){
             // TODO code application logic here
             //DBCalls.zero_particepated();
             //AlgoChoise.select_winner_to_deploy_online(2,10,130);
             //mapfromXmltrack map=new mapfromXmltrack(10);
             //System.out.println(map.my_map.size());
             // call servlet
+       try{
             byte buf[] = new byte[100];
             String b64str = new String(Base64.encodeBase64(buf, false, true));
             String serverUrl = "http://localhost:8080/saaas-server/" + "/getcontributors";
             Map<String, String> par = new HashMap<String, String>();
-            par.put("nb_contributors", "7");
+            par.put("nb_contributors", nbContributors);
+            par.put("budget", budget);
+            par.put("evaluation_time", evaluation_time);
+            par.put("algorithm", algoType);
+            
             par.put("application_content", b64str);
             par.put("application_name", "test_application1");
             post(serverUrl, par);
             //ValueEstimator.addtoMap(new CostProfile("",0,0,0,38.057509,23.808519),map);
         } catch (IOException ex) {
-            Logger.getLogger(NewMain.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ServletAccess.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
+}
 
     private static void post(String endpoint, Map<String, String> params)
             throws IOException {
