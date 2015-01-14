@@ -340,7 +340,7 @@ public class AlgoChoise {
             }
             try {
 
-                int sleep_time = 0;
+                int sleep_time = 1000;
                 Thread.sleep(sleep_time);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();

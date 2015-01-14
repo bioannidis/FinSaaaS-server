@@ -20,7 +20,7 @@ import org.apache.commons.codec.binary.Base64;
  *
  * @author Administrator
  */
-public class ServletAccess {
+public class TestAlgorithm {
 
     /**
      * @param args the command line arguments
@@ -47,7 +47,7 @@ public class ServletAccess {
             post(serverUrl, par);
             //ValueEstimator.addtoMap(new CostProfile("",0,0,0,38.057509,23.808519),map);
         } catch (IOException ex) {
-            Logger.getLogger(ServletAccess.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(TestAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
         }
 }
 

@@ -53,6 +53,7 @@ public final class Datastore {
     private static Connection connection = null;
     int rs = 0;
     private static Datastore ds = new Datastore();
+    private static final Map<String, Contributor> activeContributors = new HashMap<String, Contributor>();
 
     public static Datastore getInstance() {
         return ds;
@@ -592,6 +593,7 @@ public final class Datastore {
                 contributor.setLastReceiver(false);
                 contributor.setTimestamp(time);
                 contributor.setTimer(60);
+                activeContributors.put(regId,contributor);
                 boolean find = false;
                 for (int i = 0; i < contributors.size(); i++) {
                     if (contributors.get(i).getRegId().equals(regId)) {
@@ -818,8 +820,8 @@ public final class Datastore {
 
     public static Contributor getContributor(String regId) {
         //logger.log(Level.INFO, "Getting handle of contributor with reg. ID: {0}", regId);
-        Contributor current = null, avail = null;
-
+        Contributor avail=activeContributors.get(regId);
+/*
         synchronized (contributors) {
             Iterator<Contributor> con_it = contributors.iterator();
             while (con_it.hasNext()) {
@@ -830,7 +832,7 @@ public final class Datastore {
                 }
             }
         }
-
+*/
         return avail;
     }
 
@@ -1657,7 +1659,7 @@ public final class Datastore {
                 } else {
                     System.out.println("psaxnw stin dB kai to bazw stin lista twn cont ");
                     cont = getContributorFromDb(id);
-                    contributors.add(cont);
+                    activeContributors.put(id, cont);
                     availableContributors.add(cont);
                 }
             }
