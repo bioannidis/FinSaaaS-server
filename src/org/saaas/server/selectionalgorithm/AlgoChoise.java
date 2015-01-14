@@ -4,15 +4,20 @@
  */
 package org.saaas.server.selectionalgorithm;
 
-import org.saaas.server.selectionalgorithm.DBCalls;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import org.saaas.server.Contributor;
 import org.saaas.server.Datastore;
+import org.saaas.server.selectionalgorithm.DBCalls;
 
 /**
  *
@@ -81,30 +86,47 @@ public class AlgoChoise {
         }
         return cost;
     }
+    public static Map<String, Float> sortByValue(Map<String, Float> map) {
+        List list = new LinkedList(map.entrySet());
+        Collections.sort(list, new Comparator() {
 
+            @Override
+            public int compare(Object o1, Object o2) {
+                return ((Comparable) ((Map.Entry) (o2)).getValue()).compareTo(((Map.Entry) (o1)).getValue());
+            }
+        });
+
+        Map result = new LinkedHashMap();
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry) it.next();
+            result.put(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
     public static List<String> select_winners_to_deploy_offline(int users_to_deploy, int value_of_task) {
         List<String> regIds = new ArrayList<String>();
         List<CostProfile> costprof = select_available_users();
         //List <String> not_selectedregIds=new ArrayList<String>();
         //List <String> allregIds=new ArrayList<String>();
-        TreeMap<Float, String> costs = new TreeMap<Float, String>();
+        HashMap<String, Float> costs = new HashMap<String, Float>();
         Iterator<CostProfile> itr = costprof.iterator();
         //TODO FOR TESTING ONLY ERASE WHEN FINISH
         dbCalls.zero_particepated();
         ////erase TODO
         while (itr.hasNext()) {
             CostProfile costprofus = itr.next();
-            costs.put(computeCost(costprofus), costprofus.regId);
+            System.out.println(computeCost(costprofus));
+            costs.put(costprofus.regId,computeCost(costprofus));
             //allregIds.add(costprofus.regId);
         }
-        //costs is a sorted treemap of the costs
+        Map<String,Float> sortedCosts=sortByValue(costs);
         int selected = 0;
-        for (float cost : costs.keySet()) {
+        for (Map.Entry<String, Float> entry : sortedCosts.entrySet()) {
             //System.out.println("cost"+cost);
-            if (value_of_task >= cost) {
-                regIds.add(costs.get(cost));
+            if (value_of_task >= entry.getValue()) {
+                regIds.add(entry.getKey());
                 selected++;
-                dbCalls.informDbforSelect(costs.get(cost));
+                dbCalls.informDbforSelect(entry.getKey());
             }
             if (selected == users_to_deploy) {
                 break;
@@ -265,7 +287,7 @@ public class AlgoChoise {
         //GetContributorsServlet ListConverter(To);
     }
     
-    public static List<String> select_winner_to_deploy_online(int user_to_deploy, int Time, int Budget, boolean point_cover) {
+    public static List<String> select_winners_to_deploy_online(int user_to_deploy, int Time, int Budget, boolean point_cover) {
         datastore=Datastore.getInstance();
         dbCalls=DBCalls.getInstance();
         long start = System.currentTimeMillis();
@@ -286,16 +308,7 @@ public class AlgoChoise {
         CostProfile costprof;
         List<CostProfile> Online_users = select_available_users();
         map = new mapfromXmltrack(sensing_times);
-        /*
-         TreeMap<Float,String> costs=new TreeMap<Float,String>();
-         Iterator<CostProfile> itr=costprof.iterator();
-        
-         while (itr.hasNext()){
-         CostProfile costprofus=itr.next();
-         costs.put(computeCostOnline(costprofus),costprofus.regId);     
-         //allregIds.add(costprofus.regId);
-         }
-         */
+    
         //FOR TESTING ONLY ERASE WHEN FINISH
         dbCalls.zero_particepated();
 
@@ -305,10 +318,13 @@ public class AlgoChoise {
             Online_users = select_available_users();
             to_select = Online_users;
             to_select.removeAll(selected);
-
+            if (selected.size() == user_to_deploy) {
+                        break;
+                    }
             // System.out.println(selected);
             //System.out.println(to_select);       
             while (!to_select.isEmpty()) {
+               
                 //finds max value
                 costprof = find_max(to_select, selected, map);
                 if (costprof == null) {

@@ -45,7 +45,7 @@ public class TestContributors {
     
     public static  void main(String[] args) {
         TestContributors test=new TestContributors();
-       test.insertContributors(10);
+       test.insertContributors(30);
     }
     public static void  insertContributors(int numberOfContributors) {
     Random rand=new Random();

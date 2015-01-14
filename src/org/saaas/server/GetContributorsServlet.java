@@ -31,17 +31,17 @@ public class GetContributorsServlet extends BaseServlet {
     private Sender sender;
     private Datastore datastore;
     private AlgoChoise algoChoise;
-    int number_of_contributors,evaluation_time,budget;
-    String appName,algorithm;
+    int number_of_contributors, evaluation_time, budget;
+    String appName, algorithm;
     String appContent;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         sender = newSender(config);
-        datastore=Datastore.getInstance();
-        algoChoise=new AlgoChoise();
-          
+        datastore = Datastore.getInstance();
+        algoChoise = new AlgoChoise();
+
     }
 
     /**
@@ -60,18 +60,19 @@ public class GetContributorsServlet extends BaseServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         try {
-            if(datastore.getConnection().isClosed())
+            if (datastore.getConnection().isClosed()) {
                 datastore.setConnection();
-            
+            }
+
         } catch (SQLException ex) {
             Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
         logger.info("Reception requete getcontributors");
         String nb = getParameter(req, PARAMETER_NB_CONTRIBUTORS);
         number_of_contributors = Integer.valueOf(nb);
-        budget=Integer.valueOf(getParameter(req, PARAMETER_budget));
-        evaluation_time=Integer.valueOf(getParameter(req, PARAMETER_evaluation_time));
-        algorithm=(getParameter(req, PARAMETER_Type_algo));
+        budget = Integer.valueOf(getParameter(req, PARAMETER_budget));
+        evaluation_time = Integer.valueOf(getParameter(req, PARAMETER_evaluation_time));
+        algorithm = (getParameter(req, PARAMETER_Type_algo));
         appName = getParameter(req, PARAMETER_APP_NAME);
         logger.log(Level.INFO, "number: {0} appName : {1}", new Object[]{number_of_contributors, appName});
         appContent = getParameter(req, PARAMETER_APP_CONTENT);
@@ -132,41 +133,44 @@ public class GetContributorsServlet extends BaseServlet {
 
         //if (number <= avail.size()) { no need for this
        /* int count = 0;
-        Iterator<Contributor> con_it = avail.iterator();
-        while (count < number_of_contributors && con_it.hasNext()) {
-            Contributor current = con_it.next();
-////                    boolean status = sendMessage(current);
-////                    if(status){
-            if (current.getReachability()) ////
-            {                                                   ////
-////                        current.setReachability(true);
-////                        current.resetTimer();
-                current.setAvailability(false);
-                selected.add(current);
-                json.put(count, current.getRegId());
-                count++;
-////                    } else {
-////                        current.setReachability(false);
-////                        current.unsetTimer();
-////                    }
-            }                                                   ////
-        }
+         Iterator<Contributor> con_it = avail.iterator();
+         while (count < number_of_contributors && con_it.hasNext()) {
+         Contributor current = con_it.next();
+         ////                    boolean status = sendMessage(current);
+         ////                    if(status){
+         if (current.getReachability()) ////
+         {                                                   ////
+         ////                        current.setReachability(true);
+         ////                        current.resetTimer();
+         current.setAvailability(false);
+         selected.add(current);
+         json.put(count, current.getRegId());
+         count++;
+         ////                    } else {
+         ////                        current.setReachability(false);
+         ////                        current.unsetTimer();
+         ////                    }
+         }                                                   ////
+         }
         
-        datastore.book(uuid.toString(), selected, appName);
-        //  Datastore.getBooking(uuid.toString()).setTimer();
+         datastore.book(uuid.toString(), selected, appName);
+         //  Datastore.getBooking(uuid.toString()).setTimer();
 
         
-        Iterator<Contributor> select_it = selected.iterator();
-        while (select_it.hasNext()) {
-            Contributor curr = select_it.next();
-            selected_strings.add(curr.getRegId());
-        }*/
+         Iterator<Contributor> select_it = selected.iterator();
+         while (select_it.hasNext()) {
+         Contributor curr = select_it.next();
+         selected_strings.add(curr.getRegId());
+         }*/
         Long uuid = System.currentTimeMillis();
         List<String> selected_strings = new ArrayList<String>();
         //bill algo select  
-        int value_of_task = 10;
-        if(algorithm.equals("online"))
-        selected_strings =algoChoise.select_winner_to_deploy_online(number_of_contributors,evaluation_time,budget,true);
+        int value_of_task = budget / number_of_contributors;
+        if (algorithm.equals("online")) {
+            selected_strings = algoChoise.select_winners_to_deploy_online(number_of_contributors, evaluation_time, budget, true);
+        } else {
+            selected_strings = algoChoise.select_winners_to_deploy_offline(number_of_contributors, value_of_task);
+        }
         System.out.println("epilegmenoi xristes" + selected_strings.toString());
         //bill
         datastore.sendToDbBook(uuid.toString(), selected_strings, appName);

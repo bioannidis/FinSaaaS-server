@@ -14,6 +14,7 @@ public class Simulation {
     
     public static  void main(String[] args) {
    TestAlgorithm testAlgo=new TestAlgorithm();
-   testAlgo.Call_algorithm("10", "100", "180", "online");
+   //testAlgo.Call_algorithm("10", "100", "60", "online");
+   testAlgo.Call_algorithm("10", "100", "100", "offline");
     }
 }
