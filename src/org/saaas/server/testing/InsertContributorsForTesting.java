@@ -36,16 +36,16 @@ import org.w3c.dom.NodeList;
  *
  * @author palinka
  */
-public class TestContributors {
+public class InsertContributorsForTesting {
  
-    public TestContributors(){
+    public InsertContributorsForTesting(){
   
     }
     
     
     public static  void main(String[] args) {
-        TestContributors test=new TestContributors();
-       test.insertContributors(30);
+        InsertContributorsForTesting test=new InsertContributorsForTesting();
+       test.insertContributors(100);
     }
     public static void  insertContributors(int numberOfContributors) {
     Random rand=new Random();
@@ -74,7 +74,7 @@ public class TestContributors {
         String serverUrl = "http://localhost:8080/saaas-server/" + "/register";
         Map<String, String> params = new HashMap<String, String>();
         Date date= new Date();
-        Timestamp time = new Timestamp(date.getTime()+300000);
+        Timestamp time = new Timestamp(date.getTime()+3000000);
 	    
         params.put("regId", regId);
         params.put("type", String.valueOf(1)); // if Contributor
@@ -98,7 +98,7 @@ public class TestContributors {
         try {
             post(serverUrl, params);
         } catch (IOException ex) {
-            Logger.getLogger(TestContributors.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(InsertContributorsForTesting.class.getName()).log(Level.SEVERE, null, ex);
         }
        
             

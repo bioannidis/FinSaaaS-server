@@ -19,6 +19,7 @@ package org.saaas.server;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,7 +72,9 @@ public class HomeServlet extends BaseServlet {
     if (status != null) {
       out.print(status);
     }
-    List<Registrant> devices = datastore.getDevicesFromDb();
+    List<Registrant> devices; //datastore.getDevicesFromDb();
+      devices = new ArrayList<Registrant>();
+      devices.add(new Registrant());
     List<Contributor> subscriptors = datastore.getSubscriptors();//must change
     List<Contributor> contributors = datastore.getAvailableContributors();//FromDb();
     List<Registrant> developers = datastore.getDevelopers();//must change

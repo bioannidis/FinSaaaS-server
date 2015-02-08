@@ -78,11 +78,10 @@ public final class DBCalls {
     }
 
     public static void update_cost(String regId, float local_cost, double lat, double lon) {
-
-        cost_map.put(regId, new CostProfile(regId, local_cost, getUserPart(regId), 0, lat, lon));
-        cost_map.get(regId).local_cost = local_cost;
-        cost_map.get(regId).lat = lat;
-        cost_map.get(regId).lon = lon;
+        if(cost_map.get(regId)!=null)
+        cost_map.put(regId, new CostProfile(regId, local_cost, cost_map.get(regId).particepated, cost_map.get(regId).pay, lat, lon));
+        else
+            cost_map.put(regId, new CostProfile(regId, local_cost, getUserPart(regId), 0, lat, lon));
         //updateDbUser(regId,local_cost,lat,lon);
     }
     
@@ -121,8 +120,10 @@ public final class DBCalls {
 
     public static void pay_user(String regId, float payment) {
         cost_map.get(regId).pay = payment;
+     System.out.println("payment of user "+ payment);
         //Connection connection = null;
-        try {
+       
+        /*try {
 
             PreparedStatement statement = null;
            //            Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -141,15 +142,7 @@ public final class DBCalls {
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+        } */
     }
 
     public static boolean exist_in_db_us(String regId) {
@@ -325,6 +318,11 @@ public final class DBCalls {
 
         return late_insert;
     }
+     public static void informMapforSelect(String regId) {
+     CostProfile costP=cost_map.get(regId);
+     costP.particepated++;
+     cost_map.put(regId, costP);
+     }
 
     public static void informDbforSelect(String regId) {
         //Connection connection = null;
@@ -357,6 +355,7 @@ public final class DBCalls {
 
     public static void end_of_auction(String regId) {
         CostProfile prof = getUser(regId);
+        System.out.println("prof.pay " + prof.pay);
         //Connection connection = null;
         try {
             PreparedStatement statement = null;
@@ -371,7 +370,7 @@ public final class DBCalls {
             statement.setFloat(1, prof.pay);
             statement.executeUpdate();
 
-            System.out.println("prof.pay " + prof.pay);
+          //  System.out.println("prof.pay " + prof.pay);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

@@ -71,7 +71,8 @@ public class ResetTimerServlet extends BaseServlet {
         dispatcher.include(req, resp);
          //Contributor toBeSet = datastore.getContributor(regId);
          Contributor toBeSetDB = datastore.getContributorFromDb(regId);
-         
+         if(toBeSetDB==null)
+             datastore.getContributor(regId);
          //System.out.println(tester);
         if(toBeSetDB != null){
             
@@ -81,7 +82,7 @@ public class ResetTimerServlet extends BaseServlet {
                     
             datastore.map.put(regId, mytime);
             //System.out.println(datastore.map.get(regId));
-            datastore.setAvailabilityDB(regId, true);
+            //datastore.setAvailabilityDB(regId, true);
             //bill
             setSuccess(resp);
         }

@@ -181,7 +181,7 @@ public class ValueEstimator {
         //return the points within the sensing radious
         double minDist = 10000000, currDist;
         SortedMap<Double, Point> sub_map = map.nav_map.subMap(distance - near_area, distance + near_area);
-        System.out.println("size of map"+sub_map.size());
+        //System.out.println("size of map"+sub_map.size());
         Iterator it = sub_map.entrySet().iterator();
         while (it.hasNext()) {
             pair = (SortedMap.Entry) it.next();

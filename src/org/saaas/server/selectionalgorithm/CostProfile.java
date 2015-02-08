@@ -24,6 +24,11 @@ public class CostProfile {
         this.lat=lat;
         this.lon=lon;
     }
+
+    @Override
+    public String toString() {
+        return "CostProfile{" + "regId=" + regId + ", local_cost=" + local_cost + ", particepated=" + particepated + ", pay=" + pay + ", lat=" + lat + ", lon=" + lon + '}';
+    }
     @Override
     public boolean equals(Object o){
         if(o == null) return false;

@@ -1642,7 +1642,7 @@ public final class Datastore {
 
         return (availableContributors);
     }
-
+    //TODO change the map that is iterated it should be the activeContributors
     public static List<Contributor> getAvailableContributors() {
         List<Contributor> availableContributors = new ArrayList<Contributor>();
         Iterator itr = map.entrySet().iterator();
@@ -1657,12 +1657,16 @@ public final class Datastore {
                 if (cont != null) {
                     availableContributors.add(cont);
                 } else {
+                   /*
+                    //removed slow this only needed for restarts
                     System.out.println("psaxnw stin dB kai to bazw stin lista twn cont ");
                     cont = getContributorFromDb(id);
                     activeContributors.put(id, cont);
-                    availableContributors.add(cont);
+                    availableContributors.add(cont); */
                 }
             }
+            /*else
+                map.remove(entry.getKey());*/
         }
         System.out.println("available contributors"
                 + " size" + availableContributors.size());
