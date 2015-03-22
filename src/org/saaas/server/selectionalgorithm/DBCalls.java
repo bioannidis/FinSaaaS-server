@@ -25,66 +25,69 @@ import org.saaas.server.Datastore;
  */
 public final class DBCalls {
 
-    static String connectionURL = "jdbc:mysql://localhost:3306/saas_project";
+    static String connectionURL = "jdbc:mysql://localhost:3306/saas";
     private static final Map<String, CostProfile> cost_map = new HashMap<String, CostProfile>();
-    
-    
+
     private static Connection connection = null;
-    private static DBCalls dbCalls=new DBCalls();
-    public static DBCalls getInstance( ) {
-      return dbCalls;
+    private static DBCalls dbCalls = new DBCalls();
+
+    public static DBCalls getInstance() {
+        return dbCalls;
     }
+
     public static Connection getConnection() {
         return connection;
     }
-   
+
     public static void setConnection() {
-         try {
+        try {
             PreparedStatement statement = null;
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            connection = DriverManager.getConnection(connectionURL, "root", "");
-        }
-        catch (Exception e) {
+            //connection = DriverManager.getConnection(connectionURL, "root", "");
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
-   
+
     private DBCalls() {
-        
+
         try {
-           Class.forName("com.mysql.jdbc.Driver").newInstance();
-           connection = DriverManager.getConnection(connectionURL, "root", "");
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            connection = DriverManager.getConnection(connectionURL, "root", "");
         } catch (Exception ex) {
             Logger.getLogger(DBCalls.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-     @Override
-    protected void finalize(){
-    if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
+
+    @Override
+    protected void finalize() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
             }
-        
-    }
-    public static void new_user(String regId, float local_cost, double lat, double lon) {
-        sendToDbUser(regId, local_cost, 0, 0, lat, lon, 0);
-        cost_map.put(regId, new CostProfile(regId, local_cost, getUserPart(regId), 0, lat, lon));
+        }
 
     }
 
-    public static void update_cost(String regId, float local_cost, double lat, double lon) {
-        if(cost_map.get(regId)!=null)
-        cost_map.put(regId, new CostProfile(regId, local_cost, cost_map.get(regId).particepated, cost_map.get(regId).pay, lat, lon));
-        else
-            cost_map.put(regId, new CostProfile(regId, local_cost, getUserPart(regId), 0, lat, lon));
+    public static void newUser(String regId, float local_cost, double lat, double lon, float bat) {
+        // sendToDbUser(regId, local_cost, 0, 0, lat, lon, 0);
+        cost_map.put(regId, new CostProfile(regId, local_cost, getUserPart(regId), 0, lat, lon, bat));
+
+    }
+
+    public static void updateCost(String regId, float local_cost, double lat, double lon, float bat) {
+        if (cost_map.get(regId) != null) {
+            cost_map.put(regId, new CostProfile(regId, local_cost, cost_map.get(regId).particepated,
+                    cost_map.get(regId).pay, lat, lon, bat));
+        } else {
+            cost_map.put(regId, new CostProfile(regId, local_cost, getUserPart(regId), 0, lat, lon, bat));
+        }
         //updateDbUser(regId,local_cost,lat,lon);
     }
-    
+
     private static void updateDbUser(String regId, float local_cost, double lat, double lon) {
         //Connection connection = null;
         try {
@@ -102,47 +105,48 @@ public final class DBCalls {
             statement.setFloat(1, local_cost);
             statement.executeUpdate();
 
-                       // System.out.println("updateDbUser");
+            // System.out.println("updateDbUser");
             //System.out.println("egine to update");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
+
     }
 
-    public static void pay_user(String regId, float payment) {
+    public static void payUser(String regId, float payment) {
         cost_map.get(regId).pay = payment;
-     System.out.println("payment of user "+ payment);
+        System.out.println("payment of user " + payment);
         //Connection connection = null;
-       
+
         /*try {
 
-            PreparedStatement statement = null;
-           //            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            //connection = DriverManager.getConnection(connectionURL, "root", "");
+         PreparedStatement statement = null;
+         //            Class.forName("com.mysql.jdbc.Driver").newInstance();
+         //connection = DriverManager.getConnection(connectionURL, "root", "");
 
-            //System.out.println("sinde8ika me basi");
-            String sqle = "update user_usage set pay=? where regId= ? ;";
-            statement = connection.prepareStatement(sqle);
-            statement.setString(2, regId);
-            statement.setFloat(1, payment);
+         //System.out.println("sinde8ika me basi");
+         String sqle = "update user_usage set pay=? where regId= ? ;";
+         statement = connection.prepareStatement(sqle);
+         statement.setString(2, regId);
+         statement.setFloat(1, payment);
 
-            statement.executeUpdate();
+         statement.executeUpdate();
 
-            System.out.println("Pay user");
-            //System.out.println("egine to update");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } */
+         System.out.println("Pay user");
+         //System.out.println("egine to update");
+         } catch (Exception e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+         } */
     }
 
     public static boolean exist_in_db_us(String regId) {
@@ -153,7 +157,6 @@ public final class DBCalls {
 
            //            Class.forName("com.mysql.jdbc.Driver").newInstance();
             //connection = DriverManager.getConnection(connectionURL, "root", "");
-
             //System.out.println("sinde8ika me basi");
             String sqle = "select * from user_usage where regId=?;";
             statement = connection.prepareStatement(sqle);
@@ -167,24 +170,25 @@ public final class DBCalls {
             e.printStackTrace();
 
         } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
+
         return (found);
 
     }
 
-    public static void deleteFromDbus(String regId) {
+    public static void deleteFromDbUs(String regId) {
 
         //Connection connection = null;
         try {
             PreparedStatement statement = null;
-           //            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            //            Class.forName("com.mysql.jdbc.Driver").newInstance();
             //connection = DriverManager.getConnection(connectionURL, "root", "");
 
             String sqle = "delete from user_usage where regId=?;";
@@ -199,14 +203,14 @@ public final class DBCalls {
             e.printStackTrace();
         }
         /*/*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
 
     }
 
@@ -230,99 +234,102 @@ public final class DBCalls {
             statement.setFloat(7, total_pay);
             statement.executeUpdate();
 
-                        //System.out.println("sendToDbUser");
+            //System.out.println("sendToDbUser");
             //System.out.println("egine to update");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
+
     }
 
     public static int getUserPart(String regId) {
         //Connection connection = null;
-        CostProfile costprof = null;
-        try {
-            PreparedStatement statement = null;
-           //            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            //connection = DriverManager.getConnection(connectionURL, "root", "");
+        return 0;
+        /*CostProfile costprof = null;
+         try {
+         PreparedStatement statement = null;
+         //            Class.forName("com.mysql.jdbc.Driver").newInstance();
+         //connection = DriverManager.getConnection(connectionURL, "root", "");
 
-            //System.out.println("sinde8ika me basi");
-            String sqle = "select * from user_usage where regId=? ;";
-            statement = connection.prepareStatement(sqle);
-            statement.setString(1, regId);
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                costprof = new CostProfile(regId, rs.getFloat(2), rs.getInt(3), rs.getFloat(4), rs.getDouble(5), rs.getDouble(6));
-            }
-                       //System.out.println("sendToDbUser");
-            //System.out.println("egine to update");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
-        if (costprof != null) {
-            return costprof.particepated;
-        } else {
-            return 0;
-        }
+         //System.out.println("sinde8ika me basi");
+         String sqle = "select * from user_usage where regId=? ;";
+         statement = connection.prepareStatement(sqle);
+         statement.setString(1, regId);
+         ResultSet rs = statement.executeQuery();
+         while (rs.next()) {
+         costprof = new CostProfile(regId, rs.getFloat(2), rs.getInt(3), rs.getFloat(4), rs.getDouble(5), rs.getDouble(6));
+         }
+         //System.out.println("sendToDbUser");
+         //System.out.println("egine to update");
+         } catch (Exception e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+         } /*finally {
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
+        /*if (costprof != null) {
+         return costprof.particepated;
+         } else {
+         return 0;
+         }*/
     }
 
     public static CostProfile getUser(String regId) {
         CostProfile late_insert = cost_map.get(regId);
         /*updateDbUser(late_insert.regId, late_insert.local_cost, late_insert.lat, late_insert.lon);
-        //Connection connection = null;
-        CostProfile costprof = null;
-        try {
-            PreparedStatement statement = null;
-           //            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            //connection = DriverManager.getConnection(connectionURL, "root", "");
+         //Connection connection = null;
+         CostProfile costprof = null;
+         try {
+         PreparedStatement statement = null;
+         //            Class.forName("com.mysql.jdbc.Driver").newInstance();
+         //connection = DriverManager.getConnection(connectionURL, "root", "");
 
-            //System.out.println("sinde8ika me basi");
-            String sqle = "select * from user_usage where regId=? ;";
-            statement = connection.prepareStatement(sqle);
-            statement.setString(1, regId);
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                costprof = new CostProfile(regId, rs.getFloat(2), rs.getInt(3), rs.getFloat(4), rs.getDouble(5), rs.getDouble(6));
-            }
-                       //System.out.println("sendToDbUser");
-            //System.out.println("egine to update");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+         //System.out.println("sinde8ika me basi");
+         String sqle = "select * from user_usage where regId=? ;";
+         statement = connection.prepareStatement(sqle);
+         statement.setString(1, regId);
+         ResultSet rs = statement.executeQuery();
+         while (rs.next()) {
+         costprof = new CostProfile(regId, rs.getFloat(2), rs.getInt(3), rs.getFloat(4), rs.getDouble(5), rs.getDouble(6));
+         }
+         //System.out.println("sendToDbUser");
+         //System.out.println("egine to update");
+         } catch (Exception e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+         } /*finally {
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
 
         return late_insert;
     }
-     public static void informMapforSelect(String regId) {
-     CostProfile costP=cost_map.get(regId);
-     costP.particepated++;
-     cost_map.put(regId, costP);
-     }
+
+    public static void informMapforSelect(String regId) {
+        CostProfile costP = cost_map.get(regId);
+        costP.particepated++;
+        cost_map.put(regId, costP);
+    }
 
     public static void informDbforSelect(String regId) {
         //Connection connection = null;
@@ -343,17 +350,18 @@ public final class DBCalls {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
+
     }
 
-    public static void end_of_auction(String regId) {
+    public static void endOfAuction(String regId) {
         CostProfile prof = getUser(regId);
         System.out.println("prof.pay " + prof.pay);
         //Connection connection = null;
@@ -370,19 +378,19 @@ public final class DBCalls {
             statement.setFloat(1, prof.pay);
             statement.executeUpdate();
 
-          //  System.out.println("prof.pay " + prof.pay);
+            //  System.out.println("prof.pay " + prof.pay);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
 
     }
 
@@ -403,14 +411,14 @@ public final class DBCalls {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
 
     }
 
@@ -436,14 +444,15 @@ public final class DBCalls {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } /*finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }*/
+         if (connection != null) {
+         try {
+         connection.close();
+         } catch (SQLException ex) {
+         Logger.getLogger(Datastore.class.getName()).log(Level.SEVERE, null, ex);
+         }
+         }
+         }*/
+
     }
     /*
      * public static void informDbNotSelected (List<String> li){
@@ -452,7 +461,7 @@ public final class DBCalls {
      String regId=itr.next();
      try {
      PreparedStatement statement = null;
-    //            Class.forName("com.mysql.jdbc.Driver").newInstance();
+     //            Class.forName("com.mysql.jdbc.Driver").newInstance();
      connection = DriverManager.getConnection(connectionURL, "root","");
 			
      System.out.println("sinde8ika me basi");

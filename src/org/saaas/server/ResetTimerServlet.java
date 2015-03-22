@@ -50,31 +50,32 @@ public class ResetTimerServlet extends BaseServlet {
         String regId = getParameter(req, PARAMETER_REG_ID);
        // System.out.println("reset timer");
         //bill
-        try {
+       /* try {
             if(datastore.getConnection().isClosed())
                 datastore.setConnection();
             if(dbCalls.getConnection().isClosed())
                 dbCalls.setConnection();
         } catch (SQLException ex) {
             Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
         
         
         if(regId!=null){
         float local_cost=Float.parseFloat(getParameter(req,"local_cost"));
         double lat=Double.parseDouble(getParameter(req,"latitude"));
         double lon=Double.parseDouble(getParameter(req,"longitude"));
+        float battery_level=Float.parseFloat(getParameter(req,"battery_level"));
         //System.out.println("about to reset");
-        dbCalls.update_cost(regId, local_cost,lat,lon);
+        dbCalls.updateCost(regId, local_cost,lat,lon,battery_level);
         //bill
-        RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/setreachability?reach=true");
-        dispatcher.include(req, resp);
+        //no need i do it from hereRequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/setreachability?reach=true");
+        //dispatcher.include(req, resp);
          //Contributor toBeSet = datastore.getContributor(regId);
-         Contributor toBeSetDB = datastore.getContributorFromDb(regId);
-         if(toBeSetDB==null)
-             datastore.getContributor(regId);
+        // Contributor toBeSetDB = datastore.getContributorFromDb(regId);
+         //if(toBeSetDB==null)
+          //   datastore.getContributor(regId);
          //System.out.println(tester);
-        if(toBeSetDB != null){
+        //if(toBeSetDB != null){
             
             //toBeSet.resetTimer();
             //bill
@@ -85,9 +86,9 @@ public class ResetTimerServlet extends BaseServlet {
             //datastore.setAvailabilityDB(regId, true);
             //bill
             setSuccess(resp);
-        }
+        /*
         else
-            System.out.println("not registered user");
+            System.out.println("not registered user");*/
         }
     }
 }

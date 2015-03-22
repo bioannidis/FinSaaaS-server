@@ -1,5 +1,6 @@
 package org.saaas.server;
 
+import org.saaas.server.dataobjects.Contributor;
 import org.saaas.server.selectionalgorithm.AlgoChoise;
 import com.google.android.gcm.server.Message;
 import com.google.android.gcm.server.MulticastResult;
@@ -59,14 +60,14 @@ public class GetContributorsServlet extends BaseServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        try {
+       /* try {
             if (datastore.getConnection().isClosed()) {
                 datastore.setConnection();
             }
 
         } catch (SQLException ex) {
             Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
         logger.info("Reception requete getcontributors");
         String nb = getParameter(req, PARAMETER_NB_CONTRIBUTORS);
         number_of_contributors = Integer.valueOf(nb);
@@ -169,11 +170,11 @@ public class GetContributorsServlet extends BaseServlet {
         if (algorithm.equals("online")) {
             selected_strings = algoChoise.select_winners_to_deploy_online(number_of_contributors, evaluation_time, budget, true);
         } else {
-            selected_strings = algoChoise.select_winners_to_deploy_offline(number_of_contributors, value_of_task);
+            selected_strings = algoChoise.select_winners_to_deploy_offline(number_of_contributors, value_of_task,evaluation_time);
         }
         System.out.println("epilegmenoi xristes" + selected_strings.toString());
         //bill
-        datastore.sendToDbBook(uuid.toString(), selected_strings, appName);
+        //datastore.sendToDbBook(uuid.toString(), selected_strings, appName);
         sendAPK(selected_strings);
 
         json.put("booking ID", uuid.toString());

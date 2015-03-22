@@ -14,20 +14,24 @@ public class CostProfile {
     protected int particepated;
     protected float pay;
     protected double lat,lon;
+    protected float battery_level;
     
 
-    public CostProfile(String regId,float local_cost,int particepated, float pay,double lat,double lon){
+    public CostProfile(String regId,float local_cost,int particepated, float pay,double lat,double lon,float battery_level){
         this.regId=regId;
         this.local_cost=local_cost;
         this.pay=pay;
         this.particepated=particepated;
         this.lat=lat;
         this.lon=lon;
+        this.battery_level=battery_level;
+        
     }
 
     @Override
     public String toString() {
-        return "CostProfile{" + "regId=" + regId + ", local_cost=" + local_cost + ", particepated=" + particepated + ", pay=" + pay + ", lat=" + lat + ", lon=" + lon + '}';
+        return "CostProfile{" + "regId=" + regId + ", local_cost=" + local_cost + ", particepated=" + particepated + ", pay=" + pay + ", lat=" 
+                + lat + ", lon=" + lon + ", battery_level= "+ battery_level+'}';
     }
     @Override
     public boolean equals(Object o){

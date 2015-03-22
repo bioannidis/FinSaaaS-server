@@ -24,7 +24,7 @@ import javax.naming.Context;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.saaas.server.Datastore;
-import org.saaas.server.GeoLocation;
+import org.saaas.server.selectionalgorithm.GeoLocation;
 import org.saaas.server.selectionalgorithm.DBCalls;
 import org.saaas.server.selectionalgorithm.Point;
 import org.w3c.dom.Document;

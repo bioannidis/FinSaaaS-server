@@ -1,5 +1,6 @@
 package org.saaas.server;
 
+import org.saaas.server.dataobjects.Registrant;
 import com.google.android.gcm.server.Constants;
 import com.google.android.gcm.server.Message;
 import com.google.android.gcm.server.MulticastResult;

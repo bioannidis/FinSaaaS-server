@@ -1,4 +1,4 @@
-package org.saaas.server;
+package org.saaas.server.dataobjects;
 
 import java.sql.Timestamp;
 

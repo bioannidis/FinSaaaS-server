@@ -16,6 +16,8 @@
 
 package org.saaas.server;
 
+import org.saaas.server.dataobjects.Contributor;
+import org.saaas.server.dataobjects.Registrant;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -52,14 +54,16 @@ public class HomeServlet extends BaseServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
-     try {
+     /*try {
+         if(datastore==null)
+             Datastore.getInstance();
             if(datastore.getConnection().isClosed())
                 datastore.setConnection();
             
         } catch (SQLException ex) {
             Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
- 
+ */
     resp.setContentType("text/html");
     PrintWriter out = resp.getWriter();
     

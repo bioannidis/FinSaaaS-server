@@ -1,5 +1,7 @@
 package org.saaas.server;
 
+import org.saaas.server.dataobjects.Contributor;
+import org.saaas.server.dataobjects.Registrant;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

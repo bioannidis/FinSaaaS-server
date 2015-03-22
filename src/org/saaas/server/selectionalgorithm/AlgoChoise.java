@@ -15,12 +15,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import org.saaas.server.Contributor;
+import org.saaas.server.dataobjects.Contributor;
 import org.saaas.server.Datastore;
 import org.saaas.server.selectionalgorithm.DBCalls;
 
@@ -37,9 +38,9 @@ public class AlgoChoise {
      *so that the budjet will be not wasted
      * must be tested in the simulation
      */
-    private static double delta_for_fixing_the_limit = 0.8;
-    private static mapfromXmltrack map;
-    private static int sensing_times = 10;
+    private static double delta_for_fixing_the_limit = 0.1;
+    private static MapfromXmltrack map;
+    private static int sensing_times = 3;
     private static double point_range = 0.018;
     protected static boolean point_coverBool;
 
@@ -64,7 +65,6 @@ public class AlgoChoise {
         return costprof;
     }
 
-  
     private static float computeCost(CostProfile costprofus) {
         float cost = 0;
         if (costprofus.particepated != 0) {
@@ -86,74 +86,119 @@ public class AlgoChoise {
         });
 
         Map result = new LinkedHashMap();
+        Collections.reverse(list);
         for (Iterator it = list.iterator(); it.hasNext();) {
             Map.Entry entry = (Map.Entry) it.next();
             result.put(entry.getKey(), entry.getValue());
         }
         return result;
     }
-    private static void output_selected(List<String> li,String type,int time){
+
+    private static void output_selected(List<String> li, String type, int time, int val, String active, String available, String sumofpay, String value) {
         try {
-            Iterator<String> itr=li.iterator();
+            Iterator<String> itr = li.iterator();
             Logger logger = Logger.getLogger("MyLog");
             FileHandler fh;
-            fh = new FileHandler("C:\\Users\\palinka\\Desktop\\test\\"+type+"results.log");
+            fh = new FileHandler("C:\\Users\\palinka\\Dropbox\\test\\" + type + "results.log");
             logger.addHandler(fh);
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
-            logger.info("execution time : "+time);
+            logger.info(active);
+            logger.info(available);
+            logger.info(sumofpay);
+            logger.info(value);
+            logger.info("execution time : " + time);
+
+            logger.info("value of platform = " + val);
+            logger.info("number of times a point has to be sensed " + sensing_times);
             logger.info("+++++++++++++++++++list of selected users+++++++++++++++++++++++++");
-            while(itr.hasNext()){
-                CostProfile cp=dbCalls.getUser(itr.next());
-                 logger.info(cp.toString());  
-                
+            while (itr.hasNext()) {
+                CostProfile cp = dbCalls.getUser(itr.next());
+                logger.info(cp.toString());
+
             }
-             logger.info("+++++++++++++++++++count of selected+++++++++++++++++++++++++ : " +li.size());
+            logger.info("+++++++++++++++++++count of selected+++++++++++++++++++++++++ : " + li.size());
         } catch (IOException ex) {
             Logger.getLogger(AlgoChoise.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SecurityException ex) {
             Logger.getLogger(AlgoChoise.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    public static List<String> select_winners_to_deploy_offline(int users_to_deploy, int value_of_task) {
-        List<String> regIds = new ArrayList<String>();
-        List<CostProfile> costprof = select_available_users();
-        //List <String> not_selectedregIds=new ArrayList<String>();
-        //List <String> allregIds=new ArrayList<String>();
 
-        HashMap<String, Float> costs = new HashMap<String, Float>();
-        Iterator<CostProfile> itr = costprof.iterator();
-        //TODO FOR TESTING ONLY ERASE WHEN FINISH
-        dbCalls.zero_particepated();
-        long start = System.currentTimeMillis();
-        ////erase TODO
+    private static int compute_value_selected(List<String> li) {
+        point_coverBool = true;
+        MapfromXmltrack my_map = new MapfromXmltrack(sensing_times);
+        int val = 0;
+        Iterator<String> itr = li.iterator();
         while (itr.hasNext()) {
-            CostProfile costprofus = itr.next();
-            costs.put(costprofus.regId, computeCost(costprofus));
-            //allregIds.add(costprofus.regId);
+            CostProfile cp = dbCalls.getUser(itr.next());
+            val = (int) (val + computeValOnline(cp, my_map));
         }
-        Map<String, Float> sortedCosts = sortByValue(costs);
-        int selected = 0;
-        for (Map.Entry<String, Float> entry : sortedCosts.entrySet()) {
-            if (value_of_task >= entry.getValue()) {
-                regIds.add(entry.getKey());
-                selected++;
-                dbCalls.pay_user(entry.getKey(), entry.getValue());
-                //TODO remove this 
-                dbCalls.informMapforSelect(entry.getKey());
+        return val;
+    }
+
+    //TODO must compute the value at the end and add time
+    public static List<String> select_winners_to_deploy_offline(int users_to_deploy, int value_of_task, int Time) {
+        List<String> regIds = new ArrayList<String>();
+        String availableUsers = null, activeUsers = null, sumofpayments = null, value = null;
+        point_coverBool = true;
+        float payment = 0;
+        int active = 0, val = 0, t = 0, selected = 0;
+        map = new MapfromXmltrack(sensing_times);
+        long start = System.currentTimeMillis();
+        while (t < Time) {
+            HashMap<String, Float> costs = new HashMap<String, Float>();
+            List<CostProfile> costprof = select_available_users();
+            availableUsers = availableUsers + "\n" + costprof.size();
+            sumofpayments = sumofpayments + "\n" + payment;
+            value = value + "\n" + val;
+            active = 0;
+            Iterator<CostProfile> itr = costprof.iterator();
+            while (itr.hasNext()) {
+                CostProfile costprofus = itr.next();
+                if (!regIds.contains(costprofus.regId)) {
+                    costs.put(costprofus.regId, computeCost(costprofus));
+                } else {
+                    active++;
+                }
             }
-            if (selected == users_to_deploy) {
-                break;
+            activeUsers = activeUsers + "\n" + active;
+            Map<String, Float> sortedCosts = sortByValue(costs);
+            selected = 0;
+            for (Map.Entry<String, Float> entry : sortedCosts.entrySet()) {
+                if (value_of_task >= entry.getValue()) {
+                    if (selected >= users_to_deploy - active) {
+                        break;
+                    }
+                    regIds.add(entry.getKey());
+                    selected++;
+                    payment += entry.getValue();
+                    dbCalls.payUser(entry.getKey(), entry.getValue());
+                    SendApk(entry.getKey());
+                    CostProfile cp = dbCalls.getUser(entry.getKey());
+                    int valu = (int) computeValOnline(cp, map);
+                    ValueEstimator.addtoMap(cp, map, point_range);
+                    val = (int) (val + valu);
+                    dbCalls.informMapforSelect(entry.getKey());
+                    
+                }
+                if (selected >= users_to_deploy - active) {
+                    break;
+                }
+
             }
+            t++;
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(AlgoChoise.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        int time = (int) ((System.currentTimeMillis() - start) / 1000);
+        if (selected < users_to_deploy) {
 
         }
-        // allregIds.removeAll(regIds);
-        //not_selectedregIds=allregIds;
-        //ComputeCost.informDbNotSelected(not_selectedregIds);
-        System.out.println(" Time : " + (System.currentTimeMillis() - start));
-        if (selected < users_to_deploy);
-        //do something not enough users ?;
-        output_selected(regIds,"offline"+(users_to_deploy*value_of_task)+""+users_to_deploy,0);
+        output_selected(regIds, "offline" + (users_to_deploy * value_of_task) + "" + users_to_deploy + "" + Time, time, val, activeUsers, availableUsers, sumofpayments, value);
         return regIds;
     }
     //TODO ERASE LIST !!! To not needed
@@ -167,7 +212,7 @@ public class AlgoChoise {
      return (value);
      }*/
 
-    private static float computeCostOnline(CostProfile costprofus, mapfromXmltrack map) {
+    private static float computeCostOnline(CostProfile costprofus, MapfromXmltrack map) {
         float cost = computeCost(costprofus);
         float value = computeValOnline(costprofus, map);
         cost = value / cost;
@@ -175,18 +220,18 @@ public class AlgoChoise {
         return (cost);
     }
 
-    private static float computeValOnline(CostProfile costprofus, mapfromXmltrack map) {
+    private static float computeValOnline(CostProfile costprofus, MapfromXmltrack map) {
         float value = 0;
         if (point_coverBool) {
-            value = ValueEstimator.Value_est(costprofus, map, point_range);
+            value = ValueEstimator.valueEstimation(costprofus, map, point_range);
         } else {
-            value = ValueEstimator.Value_est(costprofus, map);
+            value = ValueEstimator.valueEstimation(costprofus, map);
         }
         return (value);
     }
 
-    private static float computeValSet(List<CostProfile> From, mapfromXmltrack map) {
-        float value = (float) 0.0001;
+    private static float computeValSet(List<CostProfile> From, MapfromXmltrack map) {
+        float value = (float) 0.000001;
         Iterator<CostProfile> itr = From.iterator();
         ArrayList<CostProfile> copy = new ArrayList<CostProfile>(From);
         while (itr.hasNext()) {
@@ -203,7 +248,7 @@ public class AlgoChoise {
         return (float) (Math.log(x) / Math.log(base));
     }
 
-    private static CostProfile find_max(List<CostProfile> From, List<CostProfile> To, mapfromXmltrack map) {
+    private static CostProfile find_max(List<CostProfile> From, List<CostProfile> To, MapfromXmltrack map) {
         float greatest_value = 0;
         Iterator<CostProfile> itr = From.iterator();
         CostProfile selected = null;
@@ -223,7 +268,7 @@ public class AlgoChoise {
         return (selected);
     }
 
-    private static CostProfile find_max_density(List<CostProfile> From, mapfromXmltrack map) {
+    private static CostProfile find_max_density(List<CostProfile> From, MapfromXmltrack map) {
         float greatest_value = 0;
         Iterator<CostProfile> itr = From.iterator();
         CostProfile selected = null;
@@ -254,35 +299,50 @@ public class AlgoChoise {
         float payment = (float) pay;
         user.pay = payment;
         //TODO remove the calls to the database
-        dbCalls.pay_user(user.regId, payment);
+        dbCalls.payUser(user.regId, payment);
     }
 
-    private static float get_limit(List<CostProfile> selected, float Budget, double limit) {
-        mapfromXmltrack my_map = new mapfromXmltrack(sensing_times);
+    private static float get_limit(List<CostProfile> left, float Budget, double limit) {
+        MapfromXmltrack my_map = new MapfromXmltrack(sensing_times);
         float lim = 0;
-        if (selected == null) {
+        if (left == null) {
             return ((float) limit);
         }
         List<CostProfile> checked = new ArrayList<CostProfile>();
         List<CostProfile> help;
-        CostProfile i = find_max_density(selected, my_map);
+        CostProfile i = find_max_density(left, my_map);
 
         help = new ArrayList<CostProfile>();
         help.add(i);
-        
+
         //computeValSet(help);
         if (i == null) {
             return (float) (limit);
         }
-        while ((!selected.isEmpty()) && (computeCost(i) <= (computeValOnline(i, my_map) * Budget / computeValSet(help, my_map)))) {
+        while ((!left.isEmpty()) && (computeCost(i) <= (computeValOnline(i, my_map) * Budget / computeValSet(help, my_map)))) {
             ValueEstimator.addtoMap(i, my_map);
             checked.add(i);
-            selected.removeAll(checked);
-            i = find_max_density(selected, my_map);
+            left.removeAll(checked);
+            i = find_max_density(left, my_map);
+            if (i == null) {
+                break;
+            }
             help.add(i);
 
         }
-        lim = computeValSet(checked, my_map) / Budget;
+
+        if (computeValSet(checked, my_map) == 0.001) {
+            return (float) limit;
+        }
+        System.out.println(left.size());
+        if (left.size() == 0) {
+            return (float) limit;
+        }
+        float lim1 = (/*computeValSet(checked, my_map)*/left.size() / Budget);
+        if ((lim1 < 0.0001) || lim1 > 1) {
+            return (float) limit;
+        }
+        lim = lim1;
         return (float) (lim / delta_for_fixing_the_limit);
     }
 
@@ -302,46 +362,76 @@ public class AlgoChoise {
         //GetContributorsServlet ListConverter(To);
     }
 
+    private static void SendApk(String reg) {
+
+    }
+
     public static List<String> select_winners_to_deploy_online(int user_to_deploy, int Time, int Budget, boolean point_cover) {
-        datastore = Datastore.getInstance();
-        dbCalls = DBCalls.getInstance();
+        try {
+            datastore = Datastore.getInstance();
+            dbCalls = DBCalls.getInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         long start = System.currentTimeMillis();
         List<CostProfile> selected = new ArrayList<CostProfile>();
         List<CostProfile> to_select = new ArrayList<CostProfile>();
         List<CostProfile> left = new ArrayList<CostProfile>();
-                List<CostProfile> left_this_stage = new ArrayList<CostProfile>();
-
+        List<CostProfile> selected_online = null, left_this_stage = new ArrayList<CostProfile>();
+        String availableUsers = null, activeUsers = null, sumofpayments = null, value = null;
         List<CostProfile> help = new ArrayList<CostProfile>();
         List<CostProfile> selected_prev_round = new ArrayList<CostProfile>();
+        int activeSelected = 0;
         //arrival time is timestamp time stored in DB
         float Start_time;
         point_coverBool = point_cover;
         int t = 1; //in sec as Time
-        double lim = 0.5; //to be changed
+        double lim = 0.35; //to be changed
         float time_st = (float) (Time / Math.pow(2, Math.ceil(log(Time, 2))));
         float budget_st = (float) (Budget / Math.pow(2, Math.ceil(log(Time, 2))));
         Date date = new Date();
         Start_time = date.getTime();
         CostProfile costprof;
-        List<CostProfile> Online_users = select_available_users();
-        map = new mapfromXmltrack(sensing_times);
+        List<CostProfile> online_users = select_available_users();
+        map = new MapfromXmltrack(sensing_times);
 
         //FOR TESTING ONLY ERASE WHEN FINISH
-        dbCalls.zero_particepated();
-
-        Iterator<CostProfile> itr;
-
+        //dbCalls.zero_particepated();
+        // Iterator<CostProfile> itr;
         while (t < Time) {
             long stageStart = System.currentTimeMillis();
-            left_this_stage = Online_users;
-            Online_users = select_available_users();
-            left_this_stage.removeAll(Online_users);
+            int size_before = online_users.size();
+            System.out.println("selected size" + selected.size());
+            left_this_stage = online_users;
+            online_users = select_available_users();
+            left_this_stage.removeAll(online_users);
+            Iterator it = selected.iterator();
+            while (it.hasNext()) {
+
+                if (left_this_stage.contains((CostProfile) it.next())) {
+                    activeSelected--;
+                }
+
+            }
+
+            availableUsers = availableUsers + "\n" + online_users.size();
+            sumofpayments = sumofpayments + "\n" + sum_of_payments(selected);
+            activeUsers = activeUsers + "\n" + activeSelected;
+            value = value + "\n" + selected.size();
+
+            /*itr=Online_users.iterator();
+             while(itr.hasNext()){
+             CostProfile cp=itr.next();
+             if(left_this_stage.contains(cp))
+             left_this_stage.remove(cp);
+             }*/
+            System.out.println("left this stage : " + left_this_stage.size());
             left.addAll(left_this_stage);
-            System.out.println("selected size " +selected.size());
-            to_select = Online_users;
+            to_select = new ArrayList<CostProfile>(online_users);
             to_select.removeAll(selected);
-            if (selected.size() == user_to_deploy) {
-                break;
+            if (selected.size() >= user_to_deploy) {
+                //  break;
             }
             while (!to_select.isEmpty()) {
 
@@ -351,10 +441,12 @@ public class AlgoChoise {
                     break;
                 }
                 float val = computeValOnline(costprof, map);
-                if ((computeCostOnline(costprof, map) >= lim) && (val / lim < (budget_st - sum_of_payments(selected)))) {
-                    System.out.println("8a plirw8ei o " + costprof.regId + " me " + val / lim);
+                if (((computeCostOnline(costprof, map) >= lim) && (val / lim < (budget_st - sum_of_payments(selected)))) && activeSelected < user_to_deploy) {
+                    System.out.println("8a plirw8ei o " + costprof.regId + " me a3ia " + val);
                     pay_user(costprof, (val / lim));
                     selected.add(costprof);
+                    activeSelected++;
+                    SendApk(costprof.regId);
                     if (point_cover) {
                         ValueEstimator.addtoMap(costprof, map, point_range);
                     } else {
@@ -362,8 +454,8 @@ public class AlgoChoise {
                     }
                     //TODO remove this 
                     dbCalls.informMapforSelect(costprof.regId);
-                    if (selected.size() == user_to_deploy) {
-                        break;
+                    if (selected.size() >= user_to_deploy) {
+                        // break;
                     }
 
                 }
@@ -374,7 +466,6 @@ public class AlgoChoise {
                 to_select.remove(costprof);
             }
 
-            
             // left.addAll(help);
             //if(t<2)
             //left.add(dbCalls.getUser("2"));
@@ -395,23 +486,26 @@ public class AlgoChoise {
                 Thread.currentThread().interrupt();
             }
             if (selected.size() == user_to_deploy) {
-               // break;
+                // break;
             }
             if (t >= time_st) {
 
-                if (left.size()>0) {
+                if (left.size() > 0) {
 
                     lim = get_limit(left, budget_st, lim);
-                    System.out.println("limit : "+lim );
+                    System.out.println("limit : " + lim);
 
                 }
                 time_st = 2 * time_st;
                 budget_st = 2 * budget_st;
                 //2h fasi
-                to_select = Online_users;
+                to_select = new ArrayList<CostProfile>(online_users);
 
                 while (!to_select.isEmpty()) {
                     //fix//
+                    if (selected.size() >= user_to_deploy) {
+                        //  break;
+                    }
                     System.out.println("budget Debug " + budget_st);
                     costprof = find_max(to_select, selected, map);
                     if (costprof == null) {
@@ -420,7 +514,7 @@ public class AlgoChoise {
                     float sum = sum_of_payments(selected);
                     System.out.println("sum of payments " + sum);
                     if (selected.size() == user_to_deploy) {
-                    //    break;
+                        //    break;
                     }
                     float val = computeValOnline(costprof, map);
                     if (selected.contains(costprof)) {
@@ -431,10 +525,12 @@ public class AlgoChoise {
                             ValueEstimator.extractFromMap(costprof, map);
                         }
                     }
-                    if ((computeCostOnline(costprof, map) >= lim) && (val / lim < (budget_st - sum)) && ((val / lim) > costprof.pay)) {
+                    if (((computeCostOnline(costprof, map) >= lim) && (val / lim < (budget_st - sum)) && ((val / lim) > costprof.pay)) && activeSelected < user_to_deploy) {
                         pay_user(costprof, (val / lim));
                         if (!selected.contains(costprof)) {
+                            SendApk(costprof.regId);
                             selected.add(costprof);
+                            activeSelected++;
                             dbCalls.informMapforSelect(costprof.regId);
                         }
                         if (point_cover) {
@@ -457,17 +553,17 @@ public class AlgoChoise {
             t = t + 1;
         }
         List<String> reg = ListConverter(selected);
-        update_total_payments(reg);
+        //update_total_payments(reg);
         //System.out.println(reg);
-         int timeExec = (int) ((System.currentTimeMillis() - start) / 1000);
-        output_selected(reg,"offline"+Time+""+Budget+""+user_to_deploy,timeExec);
+        int timeExec = (int) ((System.currentTimeMillis() - start) / 1000);
+        output_selected(reg, "online" + Time + "" + Budget + "" + user_to_deploy, timeExec, reg.size(), activeUsers, availableUsers, sumofpayments, value);
         return (reg);
     }
 
     static void update_total_payments(List<String> reg) {
         Iterator<String> itr = reg.iterator();
         while (itr.hasNext()) {
-            dbCalls.end_of_auction(itr.next());
+            dbCalls.endOfAuction(itr.next());
         }
     }
 }

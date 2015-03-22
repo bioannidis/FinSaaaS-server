@@ -4,6 +4,7 @@
  */
 package org.saaas.server;
 
+import org.saaas.server.dataobjects.Contributor;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Timestamp;

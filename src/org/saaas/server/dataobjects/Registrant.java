@@ -1,10 +1,11 @@
-package org.saaas.server;
+package org.saaas.server.dataobjects;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.lang.reflect.*;
+import org.saaas.server.CountdownTask;
 
 public class Registrant {
     private String regId;
@@ -28,6 +29,7 @@ public class Registrant {
     public String getRegId() {
             return regId;
     }
+    
     public void setRegId(String regId) {
             this.regId = regId;
     }
@@ -35,13 +37,15 @@ public class Registrant {
     public String getIpAddress() {
             return ipAddress;
     }
-    //bill
+    
     public String getUserName(){
         return userName;
     }
+    
     public void setUserName(String userName){
         this.userName=userName;
     }
+    
     public void setIpAddress(String ipAddress) {
             this.ipAddress = ipAddress;
     }
@@ -66,7 +70,7 @@ public class Registrant {
             return ttl;
     }
     
-        public void setTTL(int timetolive) {
+    public void setTTL(int timetolive) {
             this.ttl = timetolive;
     }
 

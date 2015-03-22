@@ -15,6 +15,9 @@
  */
 package org.saaas.server;
 
+import org.saaas.server.dataobjects.Booking;
+import org.saaas.server.dataobjects.Contributor;
+import org.saaas.server.dataobjects.Registrant;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -48,7 +51,7 @@ public final class Datastore {
     private static final Logger logger
             = Logger.getLogger(Datastore.class.getName());
     private static final long delay_between_updates = 20000;
-    static String connectionURL = "jdbc:mysql://localhost:3306/saas_project";
+    static String connectionURL = "jdbc:mysql://localhost:3306/saas";
     public static Map<String, Timestamp> map;
     private static Connection connection = null;
     int rs = 0;
@@ -68,7 +71,7 @@ public final class Datastore {
         try {
             PreparedStatement statement = null;
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-            connection = DriverManager.getConnection(connectionURL, "root", "");
+           // connection = DriverManager.getConnection(connectionURL, "root", "");
             map = new HashMap<String, Timestamp>();
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -584,10 +587,10 @@ public final class Datastore {
             device.setReachability(true);
             device.setAvailability(true);
             devices.add(device);
-            if (exist_in_db_Devi(device.getRegId())) {
-                deleteFromDbDevi(device.getRegId());
-            }
-            sendToDbDevi(device);
+         //   if (exist_in_db_Devi(device.getRegId())) {
+           //     deleteFromDbDevi(device.getRegId());
+            //}
+            //sendToDbDevi(device);
             if (deviceType.contentEquals("1")) {
                 Contributor contributor = new Contributor(device);
                 contributor.setLastReceiver(false);
@@ -603,20 +606,20 @@ public final class Datastore {
 
                     }
                 }
-                if (exist_in_db_Con(contributor.getRegId())) {
-                    deleteFromDbCon(contributor.getRegId());
-                    sendToDbCon(contributor);
-                } else {
-                    sendToDbCon(contributor);
-                }
+              //  if (exist_in_db_Con(contributor.getRegId())) {
+               //     deleteFromDbCon(contributor.getRegId());
+                //    sendToDbCon(contributor);
+               // } else {
+                 //   sendToDbCon(contributor);
+             //   }
 
                 if (!find) {
                     contributors.add(contributor);
                     //an ftasei edw den iparxei stin basi tou contributor
-                    if (exist_in_db_Con(contributor.getRegId())) {
-                        deleteFromDbCon(contributor.getRegId());
-                        sendToDbCon(contributor);
-                    }
+              //      if (exist_in_db_Con(contributor.getRegId())) {
+                //        deleteFromDbCon(contributor.getRegId());
+                  //      sendToDbCon(contributor);
+                  //  }
                     logger.log(Level.INFO, "IP {0}", contributor.getIpAddress());
                     logger.log(Level.INFO, "TTL {0}", contributor.getTTL());
                     boolean find2 = false;
@@ -628,19 +631,19 @@ public final class Datastore {
 
                         }
                     }
-                    if (exist_in_db_Sub(contributor.getRegId())) {
+               //     if (exist_in_db_Sub(contributor.getRegId())) {
 
-                        deleteFromDbSub(contributor.getRegId());
-                        sendToDbSub(contributor);
-                    }
+                   //     deleteFromDbSub(contributor.getRegId());
+                     //   sendToDbSub(contributor);
+                 //   }
                     if (!find2) {
                         subscriptors.add(contributor);
                     }
-                    if (exist_in_db_Sub(contributor.getRegId())) {
+                    //if (exist_in_db_Sub(contributor.getRegId())) {
 
-                        deleteFromDbSub(contributor.getRegId());
-                        sendToDbSub(contributor);
-                    }
+                      //  deleteFromDbSub(contributor.getRegId());
+                     //   sendToDbSub(contributor);
+                    //}
                 }
 
             }

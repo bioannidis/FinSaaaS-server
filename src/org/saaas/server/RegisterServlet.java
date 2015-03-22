@@ -59,14 +59,14 @@ public class RegisterServlet extends BaseServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException {
-        try {
+       /* try {
             if(datastore.getConnection().isClosed())
                 datastore.setConnection();
             if(dbCalls.getConnection().isClosed())
                 dbCalls.setConnection();
         } catch (SQLException ex) {
             Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
         System.out.println("8a ginei register");
         String regId = getParameter(req, PARAMETER_REG_ID);
         String type = getParameter(req, PARAMETER_TYPE);
@@ -78,18 +78,19 @@ public class RegisterServlet extends BaseServlet {
         double lat = Double.parseDouble(getParameter(req, "latitude"));
         double lon = Double.parseDouble(getParameter(req, "longitude"));
         float local_cost = Float.parseFloat(getParameter(req, "local_cost"));
+        float battery_level=Float.parseFloat(getParameter(req,"battery_level"));
         Timestamp time = Timestamp.valueOf(timeS);
         clogger.log(Level.INFO, "Registration ID: {0}, Type: {1} IP: {2} Timestamp: {3} ", new String[]{regId, type, ip, timeS});
     //pros8iki orismatos sto datastore
         //akoma kalitero na pernagame ena hashmap ws
         //orisma
         datastore.register(regId, type, ip, time, user);
-        if (dbCalls.exist_in_db_us(regId)) {
+        /*if (dbCalls.exist_in_db_us(regId)) {
 
             dbCalls.update_cost(regId, local_cost, lat, lon);
-        } else {
-            dbCalls.new_user(regId, local_cost, lat, lon);
-        }
+        } else {*/
+            dbCalls.newUser(regId, local_cost, lat, lon,battery_level);
+      //  }
 
         System.out.println("egine to register" + regId);
         setSuccess(resp);

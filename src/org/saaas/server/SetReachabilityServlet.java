@@ -6,6 +6,7 @@
 
 package org.saaas.server;
 
+import org.saaas.server.dataobjects.Contributor;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;

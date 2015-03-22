@@ -6,8 +6,6 @@
 
 package org.saaas.server.selectionalgorithm;
 
-import org.saaas.server.GeoLocation;
-
 /**
  *
  * @author basilhs
@@ -19,5 +17,4 @@ public class Point {
         timesSensed=times;
         myLoc=geo;
     }
-    
 }

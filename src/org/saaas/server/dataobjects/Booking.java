@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package org.saaas.server;
+package org.saaas.server.dataobjects;
 
 import com.google.android.gcm.server.Message;
 import com.google.android.gcm.server.MulticastResult;
@@ -25,6 +25,8 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
+import org.saaas.server.ChurnMgmtTask;
+import org.saaas.server.Datastore;
 
 /**
  *

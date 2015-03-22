@@ -1,4 +1,4 @@
-package org.saaas.server;
+package org.saaas.server.selectionalgorithm;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
